@@ -1,0 +1,3 @@
+#pragma once
+
+#cmakedefine EXAMPLE_VERSION "@PROJECT_VERSION@"

@@ -1,0 +1,7 @@
+# Thirdparty project dependencies
+
+/3rdparty
+
+# Output directories
+
+/build*
