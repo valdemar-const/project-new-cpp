@@ -5,7 +5,7 @@
 int
 main(
         int         argc,
-        char const *argv[]
+        const char *argv[]
 )
 {
     std::cout << example::version_string() << std::endl;

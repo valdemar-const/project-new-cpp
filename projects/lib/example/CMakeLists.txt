@@ -1,3 +1,5 @@
+# -- TARGET: Example
+
 project(Example VERSION 1.0 LANGUAGES CXX)
 
 add_library(${PROJECT_NAME})
@@ -28,3 +30,11 @@ set_target_properties(${PROJECT_NAME}
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 add_library(example::example ALIAS ${PROJECT_NAME})
+
+# -- Tests
+
+add_subdirectory(tests)
+
+# -- Docs
+
+add_subdirectory(doc)

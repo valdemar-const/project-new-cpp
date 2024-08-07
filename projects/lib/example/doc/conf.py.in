@@ -1,0 +1,36 @@
+# Configuration file for the Sphinx documentation builder.
+#
+# For the full list of built-in configuration values, see the documentation:
+# https://www.sphinx-doc.org/en/master/usage/configuration.html
+
+# -- Project information -------------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+
+project   = '${SPHINX_PROJECT}'
+copyright = '${SPHINX_YEAR}, ${SPHINX_AUTHOR}'
+author    = '${SPHINX_AUTHOR}'
+
+version = '${SPHINX_VERSION}'
+release = '${SPHINX_VERSION}-${SPHINX_RELEASE}'
+
+# -- General configuration -----------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+
+extensions = ['sphinx_rtd_theme', 'breathe']
+
+templates_path   = ['${SPHINX_TEMPLATES_PATH}']
+exclude_patterns = []
+
+language = 'ru_RU'
+
+# -- Breathe configuration -----------------------------------------------------
+
+breathe_projects = {"${BREATHE_PROJECT}": "${BREATHE_PROJECT_PATH}"}
+breathe_default_project = "${BREATHE_PROJECT}"
+breathe_implementation_filename_extensions = ['.cpp']
+
+# -- Options for HTML output ---------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+
+html_theme       = 'sphinx_rtd_theme'
+html_static_path = ['${SPHINX_HTML_STATIC_PATH}']
