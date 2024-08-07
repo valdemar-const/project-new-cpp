@@ -26,7 +26,22 @@ set(CPM_USE_NAMED_CACHE_DIRECTORIES ON CACHE BOOL "")
 include(cmake/CPM.cmake)
 
 # -- Support installable packages
-CPMAddPackage("gh:TheLartians/PackageProject.cmake@1.8.0")
+CPMAddPackage(NAME PackageProject.cmake
+  VERSION        1.11.2
+  GIT_REPOSITORY "https://github.com/TheLartians/PackageProject.cmake"
+  GIT_TAG        v1.11.2
+  GIT_SHALLOW
+  EXCLUDE_FROM_ALL)
+
+CPMAddPackage(NAME wxWidgets
+  VERSION        3.2.5
+  GIT_REPOSITORY "https://github.com/wxWidgets/wxWidgets"
+  GIT_TAG        v3.2.5
+  GIT_SHALLOW
+  EXCLUDE_FROM_ALL
+  OPTIONS
+    "wxBUILD_SHARED OFF"
+    "wxUSE_STL      ON")
 
 # -- Enable testing
 
@@ -36,3 +51,4 @@ include(CTest)
 
 add_subdirectory(projects/lib/example)
 add_subdirectory(projects/bin/example-cli)
+add_subdirectory(projects/bin/example-wx)
