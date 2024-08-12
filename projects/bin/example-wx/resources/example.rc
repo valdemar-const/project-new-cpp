@@ -1,1 +1,4 @@
+#ifdef WIN32
+aaaa ICON images/wx.ico
 #include "wx/msw/wx.rc"
+#endif

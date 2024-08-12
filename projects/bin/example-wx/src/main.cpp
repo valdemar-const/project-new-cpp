@@ -5,6 +5,10 @@
 #include <wx/wx.h>
 #endif
 
+#ifndef WIN32
+#include <resources/images/wx.xpm>
+#endif
+
 #include <iostream>
 
 class MyApp : public wxApp
@@ -40,12 +44,13 @@ MyApp::OnInit()
     std::cout << example::version_string() << std::endl;
 
     MyFrame *frame = new MyFrame();
+    frame->SetIcon(wxICON(aaaa));
     frame->Show(true);
     return true;
 }
 
 MyFrame::MyFrame()
-    : wxFrame(NULL, wxID_ANY, "Hello World")
+    : wxFrame(NULL, wxID_ANY, "Example")
 {
     wxMenu *menuFile = new wxMenu;
     menuFile->Append(ID_Hello, "&Hello...\tCtrl-H", "Help string shown in status bar for this menu item");
@@ -61,7 +66,7 @@ MyFrame::MyFrame()
 
     SetMenuBar(menuBar);
 
-    CreateStatusBar();
+    CreateStatusBar(1, wxSTB_SHOW_TIPS|wxSTB_ELLIPSIZE_END|wxFULL_REPAINT_ON_RESIZE, wxID_ANY);
     SetStatusText("Welcome to wxWidgets!");
 
     Bind(wxEVT_MENU, &MyFrame::OnHello, this, ID_Hello);

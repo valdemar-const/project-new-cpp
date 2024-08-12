@@ -34,10 +34,12 @@ CPMAddPackage(NAME PackageProject.cmake
   EXCLUDE_FROM_ALL)
 
 CPMAddPackage(NAME wxWidgets
-  VERSION        3.2.5
-  GIT_REPOSITORY "https://github.com/wxWidgets/wxWidgets"
-  GIT_TAG        v3.2.5
-  GIT_SHALLOW
+  VERSION          3.2.5
+  URL              "https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.5/wxWidgets-3.2.5.7z"
+  URL_HASH         "SHA256=9efad97c9eac8be6ce2b71723027070987fd519860bdefde2cf6c438b3383f6d"
+  # GIT_REPOSITORY   "https://github.com/wxWidgets/wxWidgets"
+  # GIT_TAG          v3.2.5
+  # GIT_SHALLOW
   EXCLUDE_FROM_ALL
   OPTIONS
     "wxBUILD_SHARED OFF"
