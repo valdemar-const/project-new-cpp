@@ -5,6 +5,7 @@ target_sources(${PROJECT_NAME}
   PRIVATE
     resources/example.rc
     src/main.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE -static-libgcc -static-libstdc++)
 target_link_libraries(${PROJECT_NAME} PRIVATE example::example wx::core)
 target_include_directories(${PROJECT_NAME} PRIVATE .)
 
@@ -21,7 +22,6 @@ set_target_properties(${PROJECT_NAME}
 
 if (WIN32)
   target_sources(${PROJECT_NAME} PRIVATE resources/example.exe.manifest)
-  target_compile_definitions(${PROJECT_NAME} PRIVATE wxUSE_NO_MANIFEST=1)
   set_target_properties(${PROJECT_NAME}
     PROPERTIES
       WIN32_EXECUTABLE ON)

@@ -5,3 +5,9 @@
 # Output directories
 
 /build*
+/out*
+
+# IDE specific
+
+.vs
+.vscode
