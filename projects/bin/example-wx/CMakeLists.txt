@@ -6,7 +6,7 @@ target_sources(${PROJECT_NAME}
     resources/example.rc
     src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE -static-libgcc -static-libstdc++)
-target_link_libraries(${PROJECT_NAME} PRIVATE example::example wx::core)
+target_link_libraries(${PROJECT_NAME} PRIVATE example::example wx::core wx::xrc)
 target_include_directories(${PROJECT_NAME} PRIVATE .)
 
 string(TOLOWER ${PROJECT_NAME} OUTPUT_NAME)
@@ -26,3 +26,5 @@ if (WIN32)
     PROPERTIES
       WIN32_EXECUTABLE ON)
 endif()
+
+configure_file(resources/ui/StartPage.xrc ${CMAKE_BINARY_DIR}/bin/resources/ui/StartPage.xrc COPYONLY)

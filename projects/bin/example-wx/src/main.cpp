@@ -5,11 +5,14 @@
 #include <wx/wx.h>
 #endif
 
+#include <wx/xrc/xmlres.h>
+
 #ifndef WIN32
 #include <resources/images/wx.xpm>
 #endif
 
 #include <iostream>
+#include <array>
 
 class MyApp : public wxApp
 {
@@ -31,18 +34,16 @@ class MyFrame : public wxFrame
     void OnAbout(wxCommandEvent &event);
 };
 
-enum
-{
-    ID_Hello = 1
-};
-
 IMPLEMENT_APP(MyApp);
 
 bool
 MyApp::OnInit()
 {
-    std::cout << example::version_string() << std::endl;
+    // Load resources
+    wxXmlResource::Get()->InitAllHandlers();
+    wxXmlResource::Get()->LoadAllFiles("resources/ui");
 
+    // Create Main wxFrame
     MyFrame *frame = new MyFrame();
     frame->SetIcon(wxICON(aaaa));
     frame->Show(true);
@@ -50,28 +51,30 @@ MyApp::OnInit()
 }
 
 MyFrame::MyFrame()
-    : wxFrame(NULL, wxID_ANY, "Example")
 {
-    wxMenu *menuFile = new wxMenu;
-    menuFile->Append(ID_Hello, "&Hello...\tCtrl-H", "Help string shown in status bar for this menu item");
-    menuFile->AppendSeparator();
-    menuFile->Append(wxID_EXIT);
+    // Load Layout from XRC
+    wxXmlResource::Get()->LoadFrame(this, nullptr, "MainFrame");
+    SetMinSize(FromDIP(wxSize {320, 240}));
 
-    wxMenu *menuHelp = new wxMenu;
-    menuHelp->Append(wxID_ABOUT);
-
-    wxMenuBar *menuBar = new wxMenuBar;
-    menuBar->Append(menuFile, "&File");
-    menuBar->Append(menuHelp, "&Help");
-
-    SetMenuBar(menuBar);
-
-    CreateStatusBar(1, wxSTB_SHOW_TIPS|wxSTB_ELLIPSIZE_END|wxFULL_REPAINT_ON_RESIZE, wxID_ANY);
+    // Configure status
     SetStatusText("Welcome to wxWidgets!");
+    auto ver = example::version_string();
+    SetStatusText(ver, 1);
+    std::array<int, 2> sizes = {-1, GetStatusBar()->GetTextExtent(ver).GetWidth()};
+    SetStatusWidths(2, sizes.data());
 
-    Bind(wxEVT_MENU, &MyFrame::OnHello, this, ID_Hello);
-    Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
-    Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);
+    // Bind menu items handlers
+    wxMenuItem *menu_item_exit  = GetMenuBar()->FindItem(XRCID("MenuItemExit"));
+    wxMenuItem *menu_item_hello = GetMenuBar()->FindItem(XRCID("MenuItemHello"));
+    wxMenuItem *menu_item_about = GetMenuBar()->FindItem(XRCID("MenuItemAbout"));
+
+    Bind(wxEVT_MENU, &MyFrame::OnHello, this, menu_item_hello->GetId());
+    Bind(wxEVT_MENU, &MyFrame::OnAbout, this, menu_item_about->GetId());
+    Bind(wxEVT_MENU, &MyFrame::OnExit, this, menu_item_exit->GetId());
+
+    // Configure greetings label message
+    wxStaticText *greetings_label = dynamic_cast<wxStaticText *>(FindWindowById(XRCID("LabelGreetings"), this));
+    greetings_label->SetLabelText("Hello wxWidgets!");
 }
 
 void
