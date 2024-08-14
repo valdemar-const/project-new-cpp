@@ -39,12 +39,15 @@ IMPLEMENT_APP(MyApp);
 bool
 MyApp::OnInit()
 {
+    SetAppName("Example");
+
     // Load resources
     wxXmlResource::Get()->InitAllHandlers();
     wxXmlResource::Get()->LoadAllFiles("resources/ui");
 
     // Create Main wxFrame
     MyFrame *frame = new MyFrame();
+    frame->SetTitle(GetAppName());
     frame->SetIcon(wxICON(aaaa));
     frame->Show(true);
     return true;
@@ -86,7 +89,7 @@ MyFrame::OnExit(wxCommandEvent &event)
 void
 MyFrame::OnAbout(wxCommandEvent &event)
 {
-    wxMessageBox("This is a wxWidgets Hello World example", "About Hello World", wxOK | wxICON_INFORMATION);
+    wxMessageBox("This is a wxWidgets Hello World example", "About " + wxGetApp().GetAppName(), wxOK | wxICON_INFORMATION);
 }
 
 void
