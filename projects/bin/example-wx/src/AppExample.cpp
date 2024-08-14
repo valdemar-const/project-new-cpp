@@ -1,3 +1,5 @@
+#include <config.h>
+
 #include <AppExample.hpp>
 #include <FrameMain.hpp>
 
@@ -15,7 +17,7 @@ namespace example
 bool
 AppExample::OnInit()
 {
-    SetAppName("Example");
+    SetAppName(CFG_APP_NAME);
 
     // Load resources
     wxXmlResource::Get()->InitAllHandlers();

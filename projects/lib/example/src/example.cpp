@@ -4,5 +4,5 @@
 std::string
 example::version_string()
 {
-    return EXAMPLE_VERSION;
+    return CFG_LIBRARY_VERSION;
 }

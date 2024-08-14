@@ -1,3 +1,5 @@
+#include <config.h>
+
 #include <FrameMain.hpp>
 #include <AppExample.hpp>
 
@@ -12,7 +14,10 @@
 
 #include <example/example.hpp>
 
+#include <string>
 #include <array>
+
+using namespace std::string_literals;
 
 namespace example
 {
@@ -24,7 +29,7 @@ FrameMain::FrameMain()
     SetMinSize(FromDIP(wxSize {320, 240}));
 
     // Configure status
-    SetStatusText("Welcome to wxWidgets!");
+    SetStatusText("Welcome to "s + CFG_APP_NAME + "!");
     auto ver = example::version_string();
     SetStatusText(ver, 1);
     std::array<int, 2> sizes = {-1, GetStatusBar()->GetTextExtent(ver).GetWidth()};
@@ -42,7 +47,7 @@ FrameMain::FrameMain()
     // Configure greetings label message
     wxPanel      *view_greetings  = wxXmlResource::Get()->LoadPanel(this, "PanelExampleGreetings");
     wxStaticText *greetings_label = dynamic_cast<wxStaticText *>(FindWindowById(XRCID("LabelGreetings"), view_greetings));
-    greetings_label->SetLabelText("Hello wxWidgets!");
+    greetings_label->SetLabelText("Hello "s + CFG_APP_NAME + "!");
 }
 
 void
@@ -54,7 +59,7 @@ FrameMain::OnExit(wxCommandEvent &event)
 void
 FrameMain::OnAbout(wxCommandEvent &event)
 {
-    wxMessageBox("This is a wxWidgets Hello World example", "About " + wxGetApp().GetAppName(), wxOK | wxICON_INFORMATION);
+    wxMessageBox("This is a "s + CFG_APP_NAME + " program.", "About " + wxGetApp().GetAppName(), wxOK | wxICON_INFORMATION);
 }
 
 void
