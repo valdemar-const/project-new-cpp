@@ -16,6 +16,7 @@
 
 namespace example
 {
+
 FrameMain::FrameMain()
 {
     // Load Layout from XRC
