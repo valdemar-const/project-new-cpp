@@ -4,10 +4,12 @@ add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME}
   PRIVATE
     resources/example.rc
+    src/AppExample.cpp
+    src/FrameMain.cpp
     src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE -static-libgcc -static-libstdc++)
 target_link_libraries(${PROJECT_NAME} PRIVATE example::example wx::core wx::xrc)
-target_include_directories(${PROJECT_NAME} PRIVATE .)
+target_include_directories(${PROJECT_NAME} PRIVATE . include)
 
 string(TOLOWER ${PROJECT_NAME} OUTPUT_NAME)
 set_target_properties(${PROJECT_NAME}
