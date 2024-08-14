@@ -19,7 +19,7 @@ namespace example
 FrameMain::FrameMain()
 {
     // Load Layout from XRC
-    wxXmlResource::Get()->LoadFrame(this, nullptr, "MainFrame");
+    wxXmlResource::Get()->LoadFrame(this, nullptr, "FrameMain");
     SetMinSize(FromDIP(wxSize {320, 240}));
 
     // Configure status
@@ -39,6 +39,7 @@ FrameMain::FrameMain()
     Bind(wxEVT_MENU, &FrameMain::OnExit, this, menu_item_exit->GetId());
 
     // Configure greetings label message
+    wxPanel      *view_greetings  = wxXmlResource::Get()->LoadPanel(this, "PanelExampleGreetings");
     wxStaticText *greetings_label = dynamic_cast<wxStaticText *>(FindWindowById(XRCID("LabelGreetings"), this));
     greetings_label->SetLabelText("Hello wxWidgets!");
 }

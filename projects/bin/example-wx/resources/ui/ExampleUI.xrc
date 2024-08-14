@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <resource xmlns="http://www.wxwidgets.org/wxxrc" version="2.5.3.0">
-  <object class="wxFrame" name="MainFrame">
+  <object class="wxFrame" name="FrameMain">
     <size>640,480</size>
     <style>wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL</style>
     <title>Example</title>
     <centered>1</centered>
     <aui_managed>0</aui_managed>
-    <object class="wxMenuBar" name="MainMenu">
+    <object class="wxMenuBar" name="MenuBarMain">
       <object class="wxMenu" name="MenuFile">
         <label>_File</label>
         <object class="wxMenuItem" name="MenuItemHello">
@@ -33,32 +33,32 @@
     <object class="wxStatusBar" name="MainStatus">
       <fields>2</fields>
     </object>
-    <object class="wxPanel" name="RootPanel">
-      <style>wxTAB_TRAVERSAL</style>
-      <object class="wxBoxSizer" name="RootSizer">
-        <orient>wxVERTICAL</orient>
-        <object class="spacer">
-          <flag>wxEXPAND</flag>
-          <border>5</border>
-          <option>1</option>
-          <size>0,0</size>
+  </object>
+  <object class="wxPanel" name="PanelExampleGreetings">
+    <style>wxTAB_TRAVERSAL</style>
+    <object class="wxBoxSizer" name="RootSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="spacer">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <size>0,0</size>
+      </object>
+      <object class="sizeritem">
+        <flag>wxALIGN_CENTER_HORIZONTAL</flag>
+        <border>5</border>
+        <option>0</option>
+        <object class="wxStaticText" name="LabelGreetings">
+          <style>wxALIGN_CENTER_HORIZONTAL</style>
+          <label>Here must be a greeting...</label>
+          <wrap>-1</wrap>
         </object>
-        <object class="sizeritem">
-          <flag>wxALIGN_CENTER_HORIZONTAL</flag>
-          <border>5</border>
-          <option>0</option>
-          <object class="wxStaticText" name="LabelGreetings">
-            <style>wxALIGN_CENTER_HORIZONTAL</style>
-            <label>Here must be a greeting...</label>
-            <wrap>-1</wrap>
-          </object>
-        </object>
-        <object class="spacer">
-          <flag>wxEXPAND</flag>
-          <border>5</border>
-          <option>1</option>
-          <size>0,0</size>
-        </object>
+      </object>
+      <object class="spacer">
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <option>1</option>
+        <size>0,0</size>
       </object>
     </object>
   </object>

@@ -29,4 +29,4 @@ if (WIN32)
       WIN32_EXECUTABLE ON)
 endif()
 
-configure_file(resources/ui/StartPage.xrc ${CMAKE_BINARY_DIR}/bin/resources/ui/StartPage.xrc COPYONLY)
+configure_file(resources/ui/ExampleUI.xrc ${CMAKE_BINARY_DIR}/bin/resources/ui/ExampleUI.xrc COPYONLY)
