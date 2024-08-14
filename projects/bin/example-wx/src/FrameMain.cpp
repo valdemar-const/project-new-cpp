@@ -41,7 +41,7 @@ FrameMain::FrameMain()
 
     // Configure greetings label message
     wxPanel      *view_greetings  = wxXmlResource::Get()->LoadPanel(this, "PanelExampleGreetings");
-    wxStaticText *greetings_label = dynamic_cast<wxStaticText *>(FindWindowById(XRCID("LabelGreetings"), this));
+    wxStaticText *greetings_label = dynamic_cast<wxStaticText *>(FindWindowById(XRCID("LabelGreetings"), view_greetings));
     greetings_label->SetLabelText("Hello wxWidgets!");
 }
 
