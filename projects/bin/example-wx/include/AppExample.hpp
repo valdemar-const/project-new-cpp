@@ -5,8 +5,6 @@
 #include <wx/app.h>
 #endif
 
-#include <wx/xrc/xmlres.h>
-
 namespace example
 {
 
