@@ -18,6 +18,19 @@ target_include_directories(${PROJECT_NAME}
     include
     ${CMAKE_CURRENT_BINARY_DIR}/config)
 
+# copy resources
+add_custom_command(TARGET ${PROJECT_NAME}
+  PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources/ui $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources/ui)
+
+# copy *.dll dependencies to target executable directory
+if (CMAKE_IMPORT_LIBRARY_SUFFIX AND (BUILD_SHARED_LIBS OR wxBUILD_SHARED))
+  add_custom_command(TARGET ${PROJECT_NAME}
+    POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_RUNTIME_DLLS:${PROJECT_NAME}>" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+      COMMAND_EXPAND_LISTS)
+endif()
+
 string(TOLOWER ${PROJECT_NAME} OUTPUT_NAME)
 set_target_properties(${PROJECT_NAME}
   PROPERTIES
@@ -35,5 +48,3 @@ if (WIN32)
     PROPERTIES
       WIN32_EXECUTABLE ON)
 endif()
-
-configure_file(resources/ui/ExampleUI.xrc ${CMAKE_BINARY_DIR}/bin/resources/ui/ExampleUI.xrc COPYONLY)

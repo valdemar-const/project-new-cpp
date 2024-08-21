@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14...3.29)
+cmake_minimum_required(VERSION 3.21...3.29)
 
 # -- Toplevel Project
 
@@ -33,6 +33,12 @@ CPMAddPackage(NAME PackageProject.cmake
   GIT_SHALLOW
   EXCLUDE_FROM_ALL)
 
+# -- Configure wxWidgets
+
+set(wxBUILD_SHARED OFF)
+set(wxBUILD_VENDOR skif)
+set(wxUSE_STL      ON)
+
 CPMAddPackage(NAME wxWidgets
   VERSION          3.2.5
   URL              "https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.5/wxWidgets-3.2.5.7z"
@@ -40,10 +46,7 @@ CPMAddPackage(NAME wxWidgets
   # GIT_REPOSITORY   "https://github.com/wxWidgets/wxWidgets"
   # GIT_TAG          v3.2.5
   # GIT_SHALLOW
-  EXCLUDE_FROM_ALL
-  OPTIONS
-    "wxBUILD_SHARED OFF"
-    "wxUSE_STL      ON")
+  EXCLUDE_FROM_ALL)
 
 # -- Enable testing
 
