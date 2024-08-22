@@ -13,6 +13,15 @@ class AppExample : public wxApp
   public:
 
     virtual bool OnInit();
+
+  protected:
+
+    void InitLanguageSupport();
+
+  protected:
+
+    wxLocale  *locale   = nullptr;
+    wxLanguage language = wxLANGUAGE_DEFAULT;
 };
 
 } // namespace example

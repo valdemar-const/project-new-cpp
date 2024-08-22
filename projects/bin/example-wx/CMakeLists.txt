@@ -1,6 +1,7 @@
 project(ExampleWx VERSION 1.0 LANGUAGES CXX)
 
-set(CFG_APP_NAME ${PROJECT_NAME})
+set(CFG_APP_NAME    ${PROJECT_NAME})
+set(CFG_APP_VERSION ${PROJECT_VERSION})
 configure_file(templates/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config/config.h)
 
 add_executable(${PROJECT_NAME})
@@ -19,9 +20,13 @@ target_include_directories(${PROJECT_NAME}
     ${CMAKE_CURRENT_BINARY_DIR}/config)
 
 # copy resources
+message(STATUS "wxWidgets: ${wxWidgets_SOURCE_DIR}")
+find_file(WX_TRANSLATION NAMES locale/ru.mo PATHS ${wxWidgets_SOURCE_DIR} NO_DEFAULT_PATH REQUIRED)
+
 add_custom_command(TARGET ${PROJECT_NAME}
   PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources/ui $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources/ui)
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources/ui $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources/ui
+    COMMAND ${CMAKE_COMMAND} -E copy ${WX_TRANSLATION} "$<TARGET_FILE_DIR:${PROJECT_NAME}>/resources/i18n/ru/LC_MESSAGES/ru.mo")
 
 # copy *.dll dependencies to target executable directory
 if (CMAKE_IMPORT_LIBRARY_SUFFIX AND (BUILD_SHARED_LIBS OR wxBUILD_SHARED))
@@ -31,6 +36,7 @@ if (CMAKE_IMPORT_LIBRARY_SUFFIX AND (BUILD_SHARED_LIBS OR wxBUILD_SHARED))
       COMMAND_EXPAND_LISTS)
 endif()
 
+# configure output directories
 string(TOLOWER ${PROJECT_NAME} OUTPUT_NAME)
 set_target_properties(${PROJECT_NAME}
   PROPERTIES
@@ -42,6 +48,7 @@ set_target_properties(${PROJECT_NAME}
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+# setting up windows specific manifest file
 if (WIN32)
   target_sources(${PROJECT_NAME} PRIVATE resources/example.exe.manifest)
   set_target_properties(${PROJECT_NAME}

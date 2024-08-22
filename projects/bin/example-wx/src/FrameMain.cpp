@@ -16,8 +16,18 @@
 
 #include <string>
 #include <array>
+#include <format>
 
 using namespace std::string_literals;
+
+// FIXME: should be extracted from xrc file by wxrc utility.
+#ifdef ADDITIONAL_TRANSLATIONS // from xrc
+_("&Hello...");
+_("&About...");
+_("Hello, Hello, Hello!");
+_("Show program information.");
+_("Exit program.");
+#endif
 
 namespace example
 {
@@ -29,8 +39,11 @@ FrameMain::FrameMain()
     SetMinSize(FromDIP(wxSize {320, 240}));
 
     // Configure status
-    SetStatusText("Welcome to "s + CFG_APP_NAME + "!");
-    auto ver = example::version_string();
+    const std::string welcome_msg = _("Welcome to {}!").ToStdString();
+    const std::string app_name    = CFG_APP_NAME;
+    SetStatusText(std::vformat(welcome_msg, std::make_format_args(app_name)));
+
+    auto ver = CFG_APP_VERSION;
     SetStatusText(ver, 1);
     std::array<int, 2> sizes = {-1, GetStatusBar()->GetTextExtent(ver).GetWidth()};
     SetStatusWidths(2, sizes.data());
@@ -47,7 +60,9 @@ FrameMain::FrameMain()
     // Configure greetings label message
     wxPanel      *view_greetings  = wxXmlResource::Get()->LoadPanel(this, "PanelExampleGreetings");
     wxStaticText *greetings_label = dynamic_cast<wxStaticText *>(FindWindowById(XRCID("LabelGreetings"), view_greetings));
-    greetings_label->SetLabelText("Hello "s + CFG_APP_NAME + "!");
+
+    const std::string hello_msg = _("Hello {}!").ToStdString();
+    greetings_label->SetLabelText(std::vformat(hello_msg, std::make_format_args(app_name)));
 }
 
 void
@@ -59,13 +74,21 @@ FrameMain::OnExit(wxCommandEvent &event)
 void
 FrameMain::OnAbout(wxCommandEvent &event)
 {
-    wxMessageBox("This is a "s + CFG_APP_NAME + " program.", "About " + wxGetApp().GetAppName(), wxOK | wxICON_INFORMATION);
+    const std::string about_info     = _("This is a {} program").ToStdString();
+    const std::string about_title    = _("About {}").ToStdString();
+    const std::string about_app_name = wxGetApp().GetAppName().ToStdString();
+
+    wxMessageBox(
+            std::vformat(about_info, std::make_format_args(CFG_APP_NAME)),
+            std::vformat(about_title, std::make_format_args(about_app_name)),
+            wxOK | wxICON_INFORMATION
+    );
 }
 
 void
 FrameMain::OnHello(wxCommandEvent &event)
 {
-    wxLogMessage("Hello world from wxWidgets!");
+    wxLogMessage(_("Hello world from wxWidgets!"));
 }
 
 } // namespace example

@@ -16,7 +16,7 @@
         </object>
         <object class="separator"/>
         <object class="wxMenuItem" name="MenuItemExit">
-          <label>_Exit</label>
+          <label>_Quit</label>
           <accel>Ctrl+Q</accel>
           <help>Exit program.</help>
         </object>
