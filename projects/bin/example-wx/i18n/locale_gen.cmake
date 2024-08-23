@@ -1,5 +1,5 @@
 find_program(EXEC_XGETTEXT xgettext)
-find_program(EXEC_MSGINIT  msginit)
+find_program(EXEC_MSGCAT   msgcat)
 find_program(EXEC_MSGMERGE msgmerge)
 find_program(EXEC_MSGFMT   msgfmt)
 
@@ -20,14 +20,16 @@ foreach(locale IN LISTS LOCALES_SUPPORTED)
   set(locale_file ${CMAKE_CURRENT_LIST_DIR}/${locale}/LC_MESSAGES/${PROJECT_NAME}.po)
   if (NOT EXISTS ${locale_file})
     message(STATUS "Locale ${locale} not exists. Create: ${locale_file}")
-    execute_process(COMMAND ${EXEC_MSGINIT} --input=${main_pot_file} --output-file=${locale_file} --locale=${locale} --no-translator)
+    execute_process(COMMAND ${EXEC_MSGCAT} --output=${locale_file} --lang=${locale} ${main_pot_file})
   endif()
 
-  set(locale_destination "$<TARGET_FILE_DIR:${PROJECT_NAME}>/resources/i18n/${locale}/LC_MESSAGES/${PROJECT_NAME}.mo")
+  set(locale_destination_dir "$<TARGET_FILE_DIR:${PROJECT_NAME}>/resources/i18n/${locale}/LC_MESSAGES")
+  set(locale_destination "${locale_destination_dir}/${PROJECT_NAME}.mo")
   add_custom_command(TARGET ${PROJECT_NAME}
     POST_BUILD
       COMMAND ${EXEC_XGETTEXT} --from-code=UTF-8 --output=${main_pot_file} --keyword=_ ${PROJECT_SOURCES}
       COMMAND ${EXEC_MSGMERGE} --update --no-fuzzy-matching ${locale_file} ${main_pot_file}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${locale_destination_dir}
       COMMAND ${EXEC_MSGFMT} ${locale_file} --output-file=${locale_destination}
     COMMENT "Generator locale files for ${PROJECT_NAME}"
     VERBATIM

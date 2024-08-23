@@ -3,6 +3,7 @@ xgettext --from-code=UTF-8 --output=messages.pot --keyword=_ `find .. -type f -n
 mkdir -p ru/LC_MESSAGES
 if not exists
   msginit --input=messages.pot --output-file=ru/LC_MESSAGES/messages.po --locale=ru_RU --no-translator
+  msgcat  --output=ru/LC_MESSAGES/messages.po messages.pot
 else
   msgmerge --update --no-fuzzy-matching ru/LC_MESSAGES/messages.po messages.pot
 
