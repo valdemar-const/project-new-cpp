@@ -19,6 +19,10 @@ target_include_directories(${PROJECT_NAME}
     include
     ${CMAKE_CURRENT_BINARY_DIR}/config)
 
+# gen translations
+
+include(i18n/locale_gen.cmake)
+
 # copy resources
 message(STATUS "wxWidgets: ${wxWidgets_SOURCE_DIR}")
 find_file(WX_TRANSLATION NAMES locale/ru.mo PATHS ${wxWidgets_SOURCE_DIR} NO_DEFAULT_PATH REQUIRED)
