@@ -19,7 +19,7 @@ foreach(locale IN LISTS LOCALES_SUPPORTED)
 
   set(locale_file ${CMAKE_CURRENT_LIST_DIR}/${locale}/LC_MESSAGES/${PROJECT_NAME}.po)
   if (NOT EXISTS ${locale_file})
-    message(STATUS "Locale ${locale} not exists. Create: ${${locale_file}}")
+    message(STATUS "Locale ${locale} not exists. Create: ${locale_file}")
     execute_process(COMMAND ${EXEC_MSGINIT} --input=${main_pot_file} --output-file=${locale_file} --locale=${locale} --no-translator)
   endif()
 
