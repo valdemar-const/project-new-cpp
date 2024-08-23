@@ -30,6 +30,8 @@ configure_file(index.rst ${CMAKE_CURRENT_BINARY_DIR}/index.rst COPYONLY)
 
 # -- TARGET: Documentation
 
+file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIRECTORY})
+
 add_custom_target(${PROJECT_NAME}Docs
   DEPENDS index.rst ${CMAKE_CURRENT_BINARY_DIR}/conf.py ${CMAKE_CURRENT_BINARY_DIR}/example.doxygen
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"

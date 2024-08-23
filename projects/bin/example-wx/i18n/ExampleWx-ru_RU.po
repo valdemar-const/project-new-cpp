@@ -1,0 +1,63 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ExampleWx\n"
+"POT-Creation-Date: 2024-08-22 02:45+0300\n"
+"PO-Revision-Date: 2024-08-22 02:45+0300\n"
+"Last-Translator: \n"
+"Language-Team: vnovikov\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.4.4\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: _\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: src/FrameMain.cpp:25
+msgid "&Hello..."
+msgstr "Привет..."
+
+#: src/FrameMain.cpp:26
+msgid "&About..."
+msgstr "Справка"
+
+#: src/FrameMain.cpp:27
+msgid "Hello, Hello, Hello!"
+msgstr "Привет, Привет, Привет!"
+
+#: src/FrameMain.cpp:28
+msgid "Show program information."
+msgstr "Показать информацию о программе."
+
+#: src/FrameMain.cpp:29
+msgid "Exit program."
+msgstr "Закрыть программу."
+
+#: src/FrameMain.cpp:42
+#, c++-format
+msgid "Welcome to {}!"
+msgstr "Добро пожаловать в {}!"
+
+#: src/FrameMain.cpp:60
+#, c++-format
+msgid "Hello {}!"
+msgstr "Привет {}!"
+
+#: src/FrameMain.cpp:72
+#, c++-format
+msgid "This is a {} program"
+msgstr "Это программа {}"
+
+#: src/FrameMain.cpp:73
+#, c++-format
+msgid "About {}"
+msgstr "О {}"
+
+#: src/FrameMain.cpp:86
+msgid "Hello world from wxWidgets!"
+msgstr "Привет мир из wxWidgets!"
+
+#~ msgid " program."
+#~ msgstr " программа."

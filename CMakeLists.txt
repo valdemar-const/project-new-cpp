@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14...3.29)
+cmake_minimum_required(VERSION 3.21...3.29)
 
 # -- Toplevel Project
 
@@ -26,7 +26,27 @@ set(CPM_USE_NAMED_CACHE_DIRECTORIES ON CACHE BOOL "")
 include(cmake/CPM.cmake)
 
 # -- Support installable packages
-CPMAddPackage("gh:TheLartians/PackageProject.cmake@1.8.0")
+CPMAddPackage(NAME PackageProject.cmake
+  VERSION        1.11.2
+  GIT_REPOSITORY "https://github.com/TheLartians/PackageProject.cmake"
+  GIT_TAG        v1.11.2
+  GIT_SHALLOW
+  EXCLUDE_FROM_ALL)
+
+# -- Configure wxWidgets
+
+set(wxBUILD_SHARED OFF)
+set(wxBUILD_VENDOR skif)
+set(wxUSE_STL      ON)
+
+CPMAddPackage(NAME wxWidgets
+  VERSION          3.2.5
+  URL              "https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.5/wxWidgets-3.2.5.7z"
+  URL_HASH         "SHA256=9efad97c9eac8be6ce2b71723027070987fd519860bdefde2cf6c438b3383f6d"
+  # GIT_REPOSITORY   "https://github.com/wxWidgets/wxWidgets"
+  # GIT_TAG          v3.2.5
+  # GIT_SHALLOW
+  EXCLUDE_FROM_ALL)
 
 # -- Enable testing
 
@@ -36,3 +56,4 @@ include(CTest)
 
 add_subdirectory(projects/lib/example)
 add_subdirectory(projects/bin/example-cli)
+add_subdirectory(projects/bin/example-wx)

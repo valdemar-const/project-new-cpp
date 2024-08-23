@@ -1,0 +1,5 @@
+#ifdef WIN32
+aaaa ICON images/wx.ico
+#include "wx/msw/wx.rc"
+wxMANIFEST_ID RT_MANIFEST "example.exe.manifest"
+#endif

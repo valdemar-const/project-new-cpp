@@ -10,8 +10,7 @@ target_include_directories(${PROJECT_NAME}
   PUBLIC  include
   PRIVATE ${CMAKE_BINARY_DIR}/lib/example)
 
-set(EXAMPLE_VERSION ${PROJECT_VERSION})
-
+set(CFG_LIBRARY_VERSION ${PROJECT_VERSION})
 configure_file(templates/config.h.in ${CMAKE_BINARY_DIR}/include/example/config/config.h @ONLY)
 
 target_include_directories(${PROJECT_NAME}

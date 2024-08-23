@@ -1,0 +1,62 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-08-23 17:00+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: eo\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: D:/vladimir/Documents/workspace/personal/new-cpp-proj/projects/bin/example-wx/src/FrameMain.cpp:25
+msgid "&Hello..."
+msgstr ""
+
+#: D:/vladimir/Documents/workspace/personal/new-cpp-proj/projects/bin/example-wx/src/FrameMain.cpp:26
+msgid "&About..."
+msgstr ""
+
+#: D:/vladimir/Documents/workspace/personal/new-cpp-proj/projects/bin/example-wx/src/FrameMain.cpp:27
+msgid "Hello, Hello, Hello!"
+msgstr ""
+
+#: D:/vladimir/Documents/workspace/personal/new-cpp-proj/projects/bin/example-wx/src/FrameMain.cpp:28
+msgid "Show program information."
+msgstr ""
+
+#: D:/vladimir/Documents/workspace/personal/new-cpp-proj/projects/bin/example-wx/src/FrameMain.cpp:29
+msgid "Exit program."
+msgstr ""
+
+#: D:/vladimir/Documents/workspace/personal/new-cpp-proj/projects/bin/example-wx/src/FrameMain.cpp:42
+#, c++-format
+msgid "Welcome to {}!"
+msgstr ""
+
+#: D:/vladimir/Documents/workspace/personal/new-cpp-proj/projects/bin/example-wx/src/FrameMain.cpp:64
+#, c++-format
+msgid "Hello {}!"
+msgstr ""
+
+#: D:/vladimir/Documents/workspace/personal/new-cpp-proj/projects/bin/example-wx/src/FrameMain.cpp:77
+#, c++-format
+msgid "This is a {} program"
+msgstr ""
+
+#: D:/vladimir/Documents/workspace/personal/new-cpp-proj/projects/bin/example-wx/src/FrameMain.cpp:78
+#, c++-format
+msgid "About {}"
+msgstr ""
+
+#: D:/vladimir/Documents/workspace/personal/new-cpp-proj/projects/bin/example-wx/src/FrameMain.cpp:91
+msgid "Hello world from wxWidgets!"
+msgstr ""
