@@ -1,0 +1,32 @@
+cmake_minimum_required(VERSION 3.12)
+
+project(ExampleGlfw VERSION 0.1 LANGUAGES CXX)
+
+add_executable(${PROJECT_NAME})
+target_sources(${PROJECT_NAME}
+	PRIVATE
+		src/Glfw_App.cpp
+		src/App.cpp
+		src/Shader.cpp
+		src/Vertex_Shader.cpp
+		src/Fragment_Shader.cpp
+		src/Shader_Program.cpp
+		src/Render_Target.cpp
+		src/Material.cpp
+		src/main.cpp)
+target_link_libraries     (${PROJECT_NAME} PRIVATE glfw glad glm::glm)
+target_include_directories(${PROJECT_NAME} PRIVATE include)
+target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)
+
+add_custom_command(TARGET ${PROJECT_NAME}
+  PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/assets $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets)
+
+set_target_properties(${PROJECT_NAME}
+  PROPERTIES
+    CMAKE_CXX_STANDARD          20
+    CMAKE_CXX_STANDARD_REQUIRED YES
+    CMAKE_CXX_EXTENSIONS        NO
+    RUNTIME_OUTPUT_DIRECTORY    ${CMAKE_BINARY_DIR}/bin
+    LIBRARY_OUTPUT_DIRECTORY    ${CMAKE_BINARY_DIR}/lib
+    ARCHIVE_OUTPUT_DIRECTORY    ${CMAKE_BINARY_DIR}/obj)

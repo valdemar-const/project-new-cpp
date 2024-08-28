@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 178d23ab..c757ea89 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -46,7 +46,7 @@ add_library(glm-header-only INTERFACE)
+ add_library(glm::glm-header-only ALIAS glm-header-only)
+ 
+ target_include_directories(glm-header-only INTERFACE
+-	"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>"
++	"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>"
+ 	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+ )
+ 
