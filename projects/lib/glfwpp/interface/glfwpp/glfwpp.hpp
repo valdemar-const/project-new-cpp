@@ -1,6 +1,9 @@
 #pragma once
 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#include <iostream>
 
 #include <string_view>
 
@@ -14,6 +17,7 @@
 #include <atomic>
 
 #include <cstdint>
+#include <cassert>
 
 namespace glfw
 {
@@ -23,9 +27,12 @@ class Window_Hints; // forward decl
 class Window;       // forward decl
 class App;          // forward decl
 
+constexpr size_t id_none {0};
+constexpr size_t id_start {1};
+
 namespace window_hint
 {
-    enum Samples
+    enum Samples : uint8_t
     {
         off = 0,
         x1  = 1,
@@ -35,30 +42,45 @@ namespace window_hint
         x16 = 16
     };
 
-    enum class Renderer_Api
+    enum Client_Api : int32_t
     {
-        None,
-        OpenGL,
-        OpenGLES
+        None     = GLFW_NO_API,
+        OpenGL   = GLFW_OPENGL_API,
+        OpenGLES = GLFW_OPENGL_ES_API
     };
 
-    struct Renderer_GL
+    struct Renderer_None
     {
-        enum class Profile
+        const Client_Api client_api = Client_Api::None;
+    };
+
+    struct Renderer_Gl
+    {
+        const Client_Api client_api = Client_Api::OpenGL;
+
+        enum Profile : int32_t
         {
-            Any,
-            Core,
-            Compat
-        } profile;
+            Any    = GLFW_OPENGL_ANY_PROFILE,
+            Core   = GLFW_OPENGL_CORE_PROFILE,
+            Compat = GLFW_OPENGL_COMPAT_PROFILE
+        } profile = Core;
 
         struct Gl_Version
         {
-            uint8_t major;
-            uint8_t minor;
+            uint8_t major = 3;
+            uint8_t minor = 3;
         } version;
 
-        bool enable_forward_compat;
+        bool                  enable_forward_compat = true;
+        std::set<std::string> required_ext;
     };
+
+    struct Renderer_Gles
+    {
+        const Client_Api client_api = Client_Api::OpenGLES;
+    };
+
+    using Renderer = std::variant<Renderer_Gl, Renderer_Gles>;
 }; // namespace window_hint
 
 class Monitor
@@ -75,22 +97,42 @@ class Monitor
 };
 
 inline Monitor::Monitor(GLFWmonitor *wrapped_monitor)
-    : self_(wrapped_monitor) {
-    };
+    : self_(wrapped_monitor)
+{
+}
 
 inline GLFWmonitor *
 Monitor::get() const
 {
     return self_;
-};
+}
 
 struct Window_Hints
 {
-    using Samples = window_hint::Samples;
+    using Samples       = window_hint::Samples;
+    using Client_Api    = window_hint::Client_Api;
+    using Renderer      = window_hint::Renderer;
+    using Renderer_None = window_hint::Renderer_None;
+    using Renderer_Gl   = window_hint::Renderer_Gl;
+    using Renderer_Gles = window_hint::Renderer_Gles;
+    using Refresh_Rate  = int32_t;
+    using Swap_Interval = uint8_t;
+
+    enum Refresh_Rate_Reserved : Refresh_Rate
+    {
+        DontCare = -1
+    };
 
   public: // fields
 
-    Samples samples = Samples::off;
+    Samples       samples                  = Samples::off;
+    Renderer      renderer                 = Renderer_Gl {};
+    bool          enable_double_buffer     = true;
+    bool          enable_resizible         = true;
+    bool          enable_scale_to_monitor  = true;
+    bool          enable_scale_framebuffer = true;
+    Refresh_Rate  refresh_rate             = Refresh_Rate_Reserved::DontCare;
+    Swap_Interval swap_interval            = 1;
 };
 
 class Window
@@ -149,6 +191,8 @@ class Window
     GLFWwindow *get() const;
 
     bool should_close() const;
+    void make_current() const;
+    void swap_buffers() const;
 
   protected:
 
@@ -165,7 +209,7 @@ inline Window::Window(int width, int height, std::string title, std::optional<st
     GLFWwindow  *share_context  = share_context_with.has_value() ? share_context_with.value().get().get() : nullptr;
 
     self_ = glfwCreateWindow(width, height, title.data(), target_monitor, share_context);
-};
+}
 
 inline Window::Window(Window &&move_from)
 {
@@ -184,19 +228,31 @@ inline Window::~Window()
     {
         glfwDestroyWindow(self_);
     }
-};
+}
 
 inline GLFWwindow *
 Window::get() const
 {
     return self_;
-};
+}
 
 inline bool
 Window::should_close() const
 {
     return glfwWindowShouldClose(self_);
-};
+}
+
+inline void
+Window::make_current() const
+{
+    glfwMakeContextCurrent(self_);
+}
+
+inline void
+Window::swap_buffers() const
+{
+    glfwSwapBuffers(self_);
+}
 
 class App
 {
@@ -204,37 +260,105 @@ class App
 
     using Window_Id = size_t;
 
+    enum Special_Window_Id : Window_Id
+    {
+        shared = -1
+    };
+
   public:
 
     App();
     ~App();
 
+    void    set_next_window_hints(Window_Hints hints);
     Window &create_window(int width, int height, std::string title = {}, std::optional<std::reference_wrapper<Monitor>> monitor = {}, std::optional<std::reference_wrapper<Window>> share_context_with = {});
 
     void run();
 
   protected:
 
+    void apply_window_hints(const Window_Hints &hints);
+    void apply_window_hint(const Window_Hints::Renderer &renderer);
+
+  protected:
+
+    Window_Hints                next_window_hints_ {};
     std::map<Window_Id, Window> windows_;
 };
 
 inline App::App()
 {
     glfwInit();
-};
+}
 
 inline App::~App()
 {
     glfwTerminate();
-};
+}
+
+inline void
+App::set_next_window_hints(Window_Hints hints)
+{
+}
 
 inline Window &
 App::create_window(int width, int height, std::string title, std::optional<std::reference_wrapper<Monitor>> monitor, std::optional<std::reference_wrapper<Window>> share_context_with)
 {
-    static std::atomic_size_t window_id {1}; // 0 means none
-    auto                     &result = windows_.emplace(std::make_pair(window_id++, Window {width, height, title, monitor, share_context_with})).first->second;
+    static std::atomic_size_t window_id {id_start}; // 0 means none
+
+    struct Renderer_Api_Loader
+    {
+        Renderer_Api_Loader(const Window &context)
+            : context_(context) {};
+
+        void
+        operator()(const Window_Hints::Renderer_None &renderer) const
+        {
+            /* do nothing */
+        }
+
+        void
+        operator()(const Window_Hints::Renderer_Gl &renderer) const
+        {
+            context_.make_current();
+
+            // load/check OpenGL extensions
+
+            assert(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress));
+
+#if 0
+            /*
+             * "GL_ARB_gpu_shader_fp64",
+             * "GL_ARB_vertex_attrib_64bit"
+             */
+#endif
+            for (const auto &ext : renderer.required_ext)
+            {
+                if (!glfwExtensionSupported(ext.data()))
+                {
+                    std::cerr << "GL extension " << ext << ": not supported" << std::endl;
+                }
+            }
+        }
+
+        void
+        operator()(const Window_Hints::Renderer_Gles &renderer) const
+        {
+            /* do nothing */
+        }
+
+      protected:
+
+        const Window &context_;
+    };
+
+    apply_window_hints(next_window_hints_);
+    auto &result = windows_.emplace(std::make_pair(window_id++, Window {width, height, title, monitor, share_context_with})).first->second;
+
+    // std::visit(Renderer_Api_Loader {result}, next_window_hints_.renderer);
+
     return result;
-};
+}
 
 inline void
 App::run()
@@ -249,7 +373,10 @@ App::run()
             if (window.should_close())
             {
                 to_delete_windows.insert(wid);
+                continue;
             }
+
+            window.swap_buffers();
         }
 
         for (auto wid : to_delete_windows)
@@ -257,6 +384,54 @@ App::run()
             windows_.erase(wid);
         }
     }
-};
+}
+
+void
+App::apply_window_hints(const Window_Hints &hints)
+{
+    glfwWindowHint(GLFW_SAMPLES, hints.samples);
+
+    apply_window_hint(hints.renderer);
+
+    glfwWindowHint(GLFW_DOUBLEBUFFER, hints.enable_double_buffer);
+    glfwWindowHint(GLFW_RESIZABLE, hints.enable_resizible);
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, hints.enable_scale_to_monitor);
+    glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, hints.enable_scale_framebuffer);
+
+    glfwWindowHint(GLFW_REFRESH_RATE, hints.refresh_rate);
+    glfwSwapInterval(hints.swap_interval);
+}
+
+inline void
+App::apply_window_hint(const Window_Hints::Renderer &renderer)
+{
+    struct Renderer_Visitor_Static
+    {
+        void
+        operator()(const Window_Hints::Renderer_None &renderer) const
+        {
+            /* do nothing */
+        }
+
+        void
+        operator()(const Window_Hints::Renderer_Gl &renderer) const
+        {
+            glfwWindowHint(GLFW_CLIENT_API, renderer.client_api);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, renderer.version.major);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, renderer.version.minor);
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, renderer.enable_forward_compat);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, renderer.profile);
+        }
+
+        void
+        operator()(const Window_Hints::Renderer_Gles &renderer) const
+        {
+            glfwWindowHint(GLFW_CLIENT_API, renderer.client_api);
+            /* do nothing */
+        }
+    } hints_applyer;
+
+    std::visit(hints_applyer, renderer);
+}
 
 } // namespace glfw

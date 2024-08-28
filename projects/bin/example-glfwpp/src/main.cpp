@@ -9,7 +9,7 @@ main(
 )
 {
     glfw::App app;
-    app.create_window(640, 480, "GlfwPlusPlus");
+    app.create_window(640, 640, "ExampleGlfwPP");
 
     app.run();
 
