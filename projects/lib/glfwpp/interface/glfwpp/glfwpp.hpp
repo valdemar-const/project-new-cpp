@@ -3,6 +3,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <boost/signals2/signal.hpp>
+
 #include <iostream>
 
 #include <string_view>
@@ -193,6 +195,26 @@ class Window
     bool should_close() const;
     void make_current() const;
     void swap_buffers() const;
+
+  public: // signals
+
+    boost::signals2::signal<void(int /*xpos*/, int /*ypos*/)>                                  on_window_pos_clb;
+    boost::signals2::signal<void(int /*width*/, int /*height*/)>                               on_size_clb;
+    boost::signals2::signal<void()>                                                            on_close_clb;
+    boost::signals2::signal<void()>                                                            on_refresh_clb;
+    boost::signals2::signal<void(int /*focused*/)>                                             on_focus_clb;
+    boost::signals2::signal<void(int /*iconified*/)>                                           on_iconify_clb;
+    boost::signals2::signal<void(int /*maximized*/)>                                           on_maximize_clb;
+    boost::signals2::signal<void(int /*width*/, int /*height*/)>                               on_framebuffer_size_clb;
+    boost::signals2::signal<void(float /*xscale*/, float /*yscale*/)>                          on_content_scale_clb;
+    boost::signals2::signal<void(int /*key*/, int /*scancode*/, int /*action*/, int /*mods*/)> on_key_clb;
+    boost::signals2::signal<void(unsigned /*codepoint*/)>                                      on_char_clb;
+    boost::signals2::signal<void(unsigned /*codepoint*/, int /*mods*/)>                        on_char_mods_clb;
+    boost::signals2::signal<void(int /*button*/, int /*action*/, int /*mods*/)>                on_mouse_button_clb;
+    boost::signals2::signal<void(double /*xpos*/, double /*ypos*/)>                            on_cursor_pos_clb;
+    boost::signals2::signal<void(int /*entered*/)>                                             on_cursor_enter_clb;
+    boost::signals2::signal<void(double /*xoffset*/, double /*yoffset*/)>                      on_scroll_clb;
+    boost::signals2::signal<void(int /*path_count*/, /*paths*/ const char **)>                 on_drop_clb;
 
   protected:
 

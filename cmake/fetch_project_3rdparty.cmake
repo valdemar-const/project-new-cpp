@@ -9,6 +9,47 @@ CPMAddPackage(NAME PackageProject.cmake
   GIT_SHALLOW
   EXCLUDE_FROM_ALL)
 
+# -- Configure Boost
+
+if (UNIX) # Setup ICU for Boost::locale
+  set(MY_ICU_CFG "--disable-dyload")
+
+  set(BUILD_ICU         YES           CACHE BOOL   "Enable compilation of ICU")
+  set(ICU_BUILD_VERSION 75.1          CACHE STRING "ICU version to build")
+  set(ICU_CFG_OPTIONS   ${MY_ICU_CFG} CACHE STRING "Additional ICU configuration options")
+  set(ICU_STATIC        YES           CACHE BOOL   "Use static instead of shared ICU (does not work for system)")
+  set(SYSTEM_ICU        OFF           CACHE BOOL   "Use system-provided icu libraries (instead of prebuilts or building")
+
+  CPMAddPackage(NAME ICU
+    VERSION           75.1
+    GITHUB_REPOSITORY valdemar-const/icu-cmake
+    GIT_TAG           master
+    GIT_SHALLOW
+    OVERRIDE_FIND_PACKAGE
+    EXCLUDE_FROM_ALL
+    )
+
+
+  set(BOOST_LOCALE_ENABLE_ICONV OFF)
+  set(BOOST_LOCALE_ENABLE_POSIX OFF)
+  set(BOOST_LOCALE_ENABLE_STD   OFF)
+  set(BOOST_LOCALE_ENABLE_ICU   ON)
+endif ()
+
+list(APPEND BOOST_INCLUDE_LIBRARIES json spirit fusion geometry thread locale signals2)
+
+if (NOT EMSCRIPTEN)
+  list(APPEND BOOST_INCLUDE_LIBRARIES test)
+endif()
+
+CPMAddPackage(NAME Boost
+  VERSION  1.85.0
+  URL      https://github.com/boostorg/boost/releases/download/boost-1.85.0/boost-1.85.0-cmake.7z
+  URL_HASH "SHA256=2399fb7b15c84c9dafc4ffb1be69c076da36e541fb960fd971b960c180023f2b"
+  OVERRIDE_FIND_PACKAGE
+  EXCLUDE_FROM_ALL
+  )
+
 # -- Configure wxWidgets
 
 set(wxBUILD_SHARED OFF)
