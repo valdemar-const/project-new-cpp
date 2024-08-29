@@ -181,7 +181,7 @@ class Window
 
   private: // hidden constructor
 
-    Window(int width, int height, std::string title = {}, std::optional<std::reference_wrapper<Monitor>> monitor = {}, std::optional<std::reference_wrapper<Window>> share_context_with = {});
+    Window(App *owner, int width, int height, std::string title = {}, std::optional<std::reference_wrapper<Monitor>> monitor = {}, std::optional<std::reference_wrapper<Window>> share_context_with = {});
 
   public:
 
@@ -218,14 +218,16 @@ class Window
 
   protected:
 
-    GLFWwindow *self_ = nullptr;
+    GLFWwindow *self_  = nullptr;
+    App        *owner_ = nullptr;
 
   protected:
 
     friend class App;
 };
 
-inline Window::Window(int width, int height, std::string title, std::optional<std::reference_wrapper<Monitor>> monitor, std::optional<std::reference_wrapper<Window>> share_context_with)
+inline Window::Window(App *owner, int width, int height, std::string title, std::optional<std::reference_wrapper<Monitor>> monitor, std::optional<std::reference_wrapper<Window>> share_context_with)
+    : owner_(owner)
 {
     GLFWmonitor *target_monitor = monitor.has_value() ? monitor.value().get().get() : nullptr;
     GLFWwindow  *share_context  = share_context_with.has_value() ? share_context_with.value().get().get() : nullptr;
@@ -235,6 +237,7 @@ inline Window::Window(int width, int height, std::string title, std::optional<st
 
 inline Window::Window(Window &&move_from)
 {
+    std::swap(owner_, move_from.owner_);
     std::swap(self_, move_from.self_);
 }
 
@@ -242,6 +245,7 @@ inline Window &
 Window::operator=(Window &&move_from)
 {
     std::swap(self_, move_from.self_);
+    std::swap(owner_, move_from.owner_);
 }
 
 inline Window::~Window()
@@ -375,7 +379,7 @@ App::create_window(int width, int height, std::string title, std::optional<std::
     };
 
     apply_window_hints(next_window_hints_);
-    auto &result = windows_.emplace(std::make_pair(window_id++, Window {width, height, title, monitor, share_context_with})).first->second;
+    auto &result = windows_.emplace(std::make_pair(window_id++, Window {this, width, height, title, monitor, share_context_with})).first->second;
 
     // std::visit(Renderer_Api_Loader {result}, next_window_hints_.renderer);
 
