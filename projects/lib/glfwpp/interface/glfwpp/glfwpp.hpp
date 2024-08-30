@@ -111,6 +111,8 @@ Monitor::get() const
 
 struct Window_Hints
 {
+  public: // types
+
     using Samples       = window_hint::Samples;
     using Client_Api    = window_hint::Client_Api;
     using Renderer      = window_hint::Renderer;
@@ -141,81 +143,75 @@ class Window
 {
   public: // types
 
-    using Pos_Clb              = std::function<void(Window &, int /*xpos*/, int /*ypos*/)>;
-    using Size_Clb             = std::function<void(Window &, int /*width*/, int /*height*/)>;
-    using Close_Clb            = std::function<void(Window &)>;
-    using Refresh_Clb          = std::function<void(Window &)>;
-    using Focus_Clb            = std::function<void(Window &, int /*focused*/)>;
-    using Iconify_Clb          = std::function<void(Window &, int /*iconified*/)>;
-    using Maximize_Clb         = std::function<void(Window &, int /*maximized*/)>;
-    using Framebuffer_Size_Clb = std::function<void(Window &, int /*width*/, int /*height*/)>;
-    using Content_Scale_Clb    = std::function<void(Window &, float /*xscale*/, float /*yscale*/)>;
-    using Key_Clb              = std::function<void(Window &, int /*key*/, int /*scancode*/, int /*action*/, int /*mods*/)>;
-    using Char_Clb             = std::function<void(Window &, unsigned /*codepoint*/)>;
-    using Char_Mods_Clb        = std::function<void(Window &, unsigned /*codepoint*/, int /*mods*/)>;
-    using Mouse_Button_Clb     = std::function<void(Window &, int /*button*/, int /*action*/, int /*mods*/)>;
-    using Cursor_Pos_Clb       = std::function<void(Window &, double /*xpos*/, double /*ypos*/)>;
-    using Cursor_Enter_Clb     = std::function<void(Window &, int /*entered*/)>;
-    using Scroll_Clb           = std::function<void(Window &, double /*xoffset*/, double /*yoffset*/)>;
-    using Drop_Clb             = std::function<void(Window &, int /*path_count*/, /*paths*/ const char **)>;
+    using Signal_Pos              = boost::signals2::signal<void(Window &, int /*xpos*/, int /*ypos*/)>;
+    using Signal_Size             = boost::signals2::signal<void(Window &, int /*width*/, int /*height*/)>;
+    using Signal_Close            = boost::signals2::signal<void(Window &)>;
+    using Signal_Refresh          = boost::signals2::signal<void(Window &)>;
+    using Signal_Focus            = boost::signals2::signal<void(Window &, int /*focused*/)>;
+    using Signal_Iconify          = boost::signals2::signal<void(Window &, int /*iconified*/)>;
+    using Signal_Maximize         = boost::signals2::signal<void(Window &, int /*maximized*/)>;
+    using Signal_Framebuffer_Size = boost::signals2::signal<void(Window &, int /*width*/, int /*height*/)>;
+    using Signal_Content_Scale    = boost::signals2::signal<void(Window &, float /*xscale*/, float /*yscale*/)>;
+    using Signal_Key              = boost::signals2::signal<void(Window &, int /*key*/, int /*scancode*/, int /*action*/, int /*mods*/)>;
+    using Signal_Char             = boost::signals2::signal<void(Window &, unsigned /*codepoint*/)>;
+    using Signal_Char_Mods        = boost::signals2::signal<void(Window &, unsigned /*codepoint*/, int /*mods*/)>;
+    using Signal_Mouse_Button     = boost::signals2::signal<void(Window &, int /*button*/, int /*action*/, int /*mods*/)>;
+    using Signal_Cursor_Pos       = boost::signals2::signal<void(Window &, double /*xpos*/, double /*ypos*/)>;
+    using Signal_Cursor_Enter     = boost::signals2::signal<void(Window &, int /*entered*/)>;
+    using Signal_Scroll           = boost::signals2::signal<void(Window &, double /*xoffset*/, double /*yoffset*/)>;
+    using Signal_Drop             = boost::signals2::signal<void(Window &, int /*path_count*/, /*paths*/ const char **)>;
 
-    struct Window_Callback_Context
-    {
-        Window_Callback_Context(std::map<GLFWwindow *, Window *> &windows_db)
-            : windows_db_(windows_db)
-        {
-        }
-
-        Window &
-        getw(GLFWwindow *w) const
-        {
-            return *windows_db_.at(w);
-        };
-
-      protected:
-
-        std::map<GLFWwindow *, Window *> &windows_db_;
-    };
-
-  public:  // default callbacks
   private: // hidden constructor
 
     Window(App *owner, int width, int height, std::string title = {}, std::optional<std::reference_wrapper<Monitor>> monitor = {}, std::optional<std::reference_wrapper<Window>> share_context_with = {});
-    Window(Window &copy_from)            = default;
-    Window &operator=(Window &copy_from) = default;
+    Window(Window &copy_from)            = delete;
+    Window &operator=(Window &copy_from) = delete;
 
-  public:
+  public: // public constructors
 
-    Window(Window &&move_from);
-    Window &operator=(Window &&move_from);
+    Window(Window &&move_from) noexcept(false);
+    Window &operator=(Window &&move_from) noexcept(false);
 
-    ~Window();
+    ~Window() noexcept(true);
 
     GLFWwindow *get() const;
 
+  public: // setters/getters
+
+    void set_title(std::string);
+    void set_icon(int count, GLFWimage *images);
+    void set_pos(int xpos, int ypos);
+    void set_size_limits(int minwidth, int minheight, int maxwidth, int maxheight);
+    void set_aspect_ratio(int numer, int denom);
+    void set_size(int width, int height);
+    void set_opacity(float opacity);
+
     bool should_close() const;
-    void make_current() const;
+
+  public: // context control
+
+    void make_current(bool is_on = true) const;
     void swap_buffers() const;
 
   public: // signals
 
-    boost::signals2::signal<void(Window &, int /*xpos*/, int /*ypos*/)>                                  on_window_pos;
-    boost::signals2::signal<void(Window &, int /*width*/, int /*height*/)>                               on_size;
-    boost::signals2::signal<void(Window &)>                                                              on_close;
-    boost::signals2::signal<void(Window &)>                                                              on_refresh;
-    boost::signals2::signal<void(Window &, int /*focused*/)>                                             on_focus;
-    boost::signals2::signal<void(Window &, int /*iconified*/)>                                           on_iconify;
-    boost::signals2::signal<void(Window &, int /*maximized*/)>                                           on_maximize;
-    boost::signals2::signal<void(Window &, int /*width*/, int /*height*/)>                               on_framebuffer_size;
-    boost::signals2::signal<void(Window &, float /*xscale*/, float /*yscale*/)>                          on_content_scale;
-    boost::signals2::signal<void(Window &, int /*key*/, int /*scancode*/, int /*action*/, int /*mods*/)> on_key;
-    boost::signals2::signal<void(Window &, unsigned /*codepoint*/)>                                      on_char;
-    boost::signals2::signal<void(Window &, unsigned /*codepoint*/, int /*mods*/)>                        on_char_mods;
-    boost::signals2::signal<void(Window &, int /*button*/, int /*action*/, int /*mods*/)>                on_mouse_button;
-    boost::signals2::signal<void(Window &, double /*xpos*/, double /*ypos*/)>                            on_cursor_pos;
-    boost::signals2::signal<void(Window &, int /*entered*/)>                                             on_cursor_enter;
-    boost::signals2::signal<void(Window &, double /*xoffset*/, double /*yoffset*/)>                      on_scroll;
-    boost::signals2::signal<void(Window &, int /*path_count*/, /*paths*/ const char **)>                 on_drop;
+    Signal_Pos              on_window_pos;
+    Signal_Size             on_size;
+    Signal_Close            on_close;
+    Signal_Refresh          on_refresh;
+    Signal_Focus            on_focus;
+    Signal_Iconify          on_iconify;
+    Signal_Maximize         on_maximize;
+    Signal_Framebuffer_Size on_framebuffer_size;
+    Signal_Content_Scale    on_content_scale;
+    Signal_Key              on_key;
+    Signal_Char             on_char;
+    Signal_Char_Mods        on_char_mods;
+    Signal_Mouse_Button     on_mouse_button;
+    Signal_Cursor_Pos       on_cursor_pos;
+    Signal_Cursor_Enter     on_cursor_enter;
+    Signal_Scroll           on_scroll;
+    Signal_Drop             on_drop;
 
   protected:
 
@@ -226,147 +222,84 @@ class Window
 
     friend class App;
 
-  private:
+  private: // for signals support
+
+    struct Window_Callback_Context; // forward decl
+
+    void setup_default_callbacks();
 
     static void
-    default_window_pos_clb(GLFWwindow *self, int xpos, int ypos)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_window_pos(context.getw(self), xpos, ypos);
-    };
+    default_window_pos_clb(GLFWwindow *self, int xpos, int ypos);
 
     static void
-    default_size_clb(GLFWwindow *self, int width, int height)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_size(context.getw(self), width, height);
-    };
+    default_size_clb(GLFWwindow *self, int width, int height);
 
     static void
-    default_close_clb(GLFWwindow *self)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_close(context.getw(self));
-    };
+    default_close_clb(GLFWwindow *self);
 
     static void
-    default_refresh_clb(GLFWwindow *self)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_refresh(context.getw(self));
-    };
+    default_refresh_clb(GLFWwindow *self);
 
     static void
-    default_focus_clb(GLFWwindow *self, int focused)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_focus(context.getw(self), focused);
-    };
+    default_focus_clb(GLFWwindow *self, int focused);
 
     static void
-    default_iconify_clb(GLFWwindow *self, int iconified)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_iconify(context.getw(self), iconified);
-    };
+    default_iconify_clb(GLFWwindow *self, int iconified);
 
     static void
-    default_maximize_clb(GLFWwindow *self, int maximized)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_maximize(context.getw(self), maximized);
-    };
+    default_maximize_clb(GLFWwindow *self, int maximized);
 
     static void
-    default_framebuffer_size_clb(GLFWwindow *self, int width, int height)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_framebuffer_size(context.getw(self), width, height);
-    };
+    default_framebuffer_size_clb(GLFWwindow *self, int width, int height);
 
     static void
-    default_content_scale_clb(GLFWwindow *self, float xscale, float yscale)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_content_scale(context.getw(self), xscale, yscale);
-    };
+    default_content_scale_clb(GLFWwindow *self, float xscale, float yscale);
 
     static void
-    default_key_clb(GLFWwindow *self, int key, int scancode, int action, int mods)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_key(context.getw(self), key, scancode, action, mods);
-    };
+    default_key_clb(GLFWwindow *self, int key, int scancode, int action, int mods);
 
     static void
-    default_char_clb(GLFWwindow *self, unsigned codepoint)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_char(context.getw(self), codepoint);
-    };
+    default_char_clb(GLFWwindow *self, unsigned codepoint);
 
     static void
-    default_char_mods_clb(GLFWwindow *self, unsigned codepoint, int mods)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_char_mods(context.getw(self), codepoint, mods);
-    };
+    default_char_mods_clb(GLFWwindow *self, unsigned codepoint, int mods);
 
     static void
-    default_mouse_button_clb(GLFWwindow *self, int button, int action, int mods)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_mouse_button(context.getw(self), button, action, mods);
-    };
+    default_mouse_button_clb(GLFWwindow *self, int button, int action, int mods);
 
     static void
-    default_cursor_pos_clb(GLFWwindow *self, double xpos, double ypos)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_cursor_pos(context.getw(self), xpos, ypos);
-    };
+    default_cursor_pos_clb(GLFWwindow *self, double xpos, double ypos);
 
     static void
-    default_cursor_enter_clb(GLFWwindow *self, int entered)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_cursor_enter(context.getw(self), entered);
-    };
+    default_cursor_enter_clb(GLFWwindow *self, int entered);
 
     static void
-    default_scroll_clb(GLFWwindow *self, double xoffset, double yoffset)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_scroll(context.getw(self), xoffset, yoffset);
-    };
+    default_scroll_clb(GLFWwindow *self, double xoffset, double yoffset);
 
     static void
-    default_drop_clb(GLFWwindow *self, int path_count, const char **paths)
-    {
-        auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
-        assert(self == context.getw(self).get());
-        context.getw(self).on_drop(context.getw(self), path_count, paths);
-    };
+    default_drop_clb(GLFWwindow *self, int path_count, const char **paths);
 
-  private:
+  private: // for getting Window instance by GLFWwindow pointer in default callbacks functions
 
     static std::map<GLFWwindow *, Window *> windows_;
+};
+
+struct Window::Window_Callback_Context
+{
+    inline Window_Callback_Context(const std::map<GLFWwindow *, Window *> &windows_db)
+        : windows_db_(windows_db)
+    {
+    }
+
+    inline Window &
+    getw(GLFWwindow *w) const
+    {
+        return *windows_db_.at(w);
+    };
+
+  protected:
+
+    const std::map<GLFWwindow *, Window *> &windows_db_;
 };
 
 inline std::map<GLFWwindow *, Window *> Window::windows_ = {};
@@ -379,36 +312,14 @@ inline Window::Window(App *owner, int width, int height, std::string title, std:
 
     self_ = glfwCreateWindow(width, height, title.data(), target_monitor, share_context);
 
-    auto *clb_context = new Window_Callback_Context {windows_};
-
-    glfwSetWindowUserPointer(self_, clb_context);
-
-    glfwSetWindowPosCallback(self_, default_window_pos_clb);
-#if 0
-    glfwSetWindowSizeCallback(self_, default_size_clb);
-    glfwSetWindowCloseCallback(self_, default_close_clb);
-    glfwSetWindowRefreshCallback(self_, default_refresh_clb);
-    glfwSetWindowFocusCallback(self_, default_focus_clb);
-    glfwSetWindowIconifyCallback(self_, default_iconify_clb);
-    glfwSetWindowMaximizeCallback(self_, default_maximize_clb);
-    glfwSetFramebufferSizeCallback(self_, default_framebuffer_size_clb);
-    glfwSetWindowContentScaleCallback(self_, default_content_scale_clb);
-    glfwSetKeyCallback(self_, default_key_clb);
-    glfwSetCharCallback(self_, default_char_clb);
-    glfwSetCharModsCallback(self_, default_char_mods_clb);
-    glfwSetMouseButtonCallback(self_, default_mouse_button_clb);
-    glfwSetCursorPosCallback(self_, default_cursor_pos_clb);
-    glfwSetCursorEnterCallback(self_, default_cursor_enter_clb);
-    glfwSetScrollCallback(self_, default_scroll_clb);
-    glfwSetDropCallback(self_, default_drop_clb);
-#endif
-    windows_.insert(std::make_pair(self_, this));
+    setup_default_callbacks();
 }
 
 inline Window::Window(Window &&move_from)
 {
     std::swap(owner_, move_from.owner_);
     std::swap(self_, move_from.self_);
+
     windows_.at(self_) = this;
 }
 
@@ -417,6 +328,7 @@ Window::operator=(Window &&move_from)
 {
     std::swap(self_, move_from.self_);
     std::swap(owner_, move_from.owner_);
+
     windows_.at(self_) = this;
 }
 
@@ -429,6 +341,7 @@ inline Window::~Window()
         {
             delete context;
         }
+        windows_.erase(self_);
         glfwDestroyWindow(self_);
     }
 }
@@ -446,9 +359,9 @@ Window::should_close() const
 }
 
 inline void
-Window::make_current() const
+Window::make_current(bool is_on) const
 {
-    glfwMakeContextCurrent(self_);
+    glfwMakeContextCurrent((is_on) ? self_ : nullptr);
 }
 
 inline void
@@ -456,6 +369,168 @@ Window::swap_buffers() const
 {
     glfwSwapBuffers(self_);
 }
+
+inline void
+Window::setup_default_callbacks()
+{
+    glfwSetWindowPosCallback(self_, default_window_pos_clb);
+    glfwSetWindowSizeCallback(self_, default_size_clb);
+    glfwSetWindowCloseCallback(self_, default_close_clb);
+    glfwSetWindowRefreshCallback(self_, default_refresh_clb);
+    glfwSetWindowFocusCallback(self_, default_focus_clb);
+    glfwSetWindowIconifyCallback(self_, default_iconify_clb);
+    glfwSetWindowMaximizeCallback(self_, default_maximize_clb);
+    glfwSetFramebufferSizeCallback(self_, default_framebuffer_size_clb);
+    glfwSetWindowContentScaleCallback(self_, default_content_scale_clb);
+    glfwSetKeyCallback(self_, default_key_clb);
+    glfwSetCharCallback(self_, default_char_clb);
+    glfwSetCharModsCallback(self_, default_char_mods_clb);
+    glfwSetMouseButtonCallback(self_, default_mouse_button_clb);
+    glfwSetCursorPosCallback(self_, default_cursor_pos_clb);
+    glfwSetCursorEnterCallback(self_, default_cursor_enter_clb);
+    glfwSetScrollCallback(self_, default_scroll_clb);
+    glfwSetDropCallback(self_, default_drop_clb);
+
+    windows_.insert(std::make_pair(self_, this));
+    auto *clb_context = new Window_Callback_Context {windows_};
+    glfwSetWindowUserPointer(self_, clb_context);
+}
+
+inline void
+Window::default_window_pos_clb(GLFWwindow *self, int xpos, int ypos)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_window_pos(context.getw(self), xpos, ypos);
+};
+
+inline void
+Window::default_size_clb(GLFWwindow *self, int width, int height)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_size(context.getw(self), width, height);
+};
+
+inline void
+Window::default_close_clb(GLFWwindow *self)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_close(context.getw(self));
+};
+
+inline void
+Window::default_refresh_clb(GLFWwindow *self)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_refresh(context.getw(self));
+};
+
+inline void
+Window::default_focus_clb(GLFWwindow *self, int focused)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_focus(context.getw(self), focused);
+};
+
+inline void
+Window::default_iconify_clb(GLFWwindow *self, int iconified)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_iconify(context.getw(self), iconified);
+};
+
+inline void
+Window::default_maximize_clb(GLFWwindow *self, int maximized)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_maximize(context.getw(self), maximized);
+};
+
+inline void
+Window::default_framebuffer_size_clb(GLFWwindow *self, int width, int height)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_framebuffer_size(context.getw(self), width, height);
+};
+
+inline void
+Window::default_content_scale_clb(GLFWwindow *self, float xscale, float yscale)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_content_scale(context.getw(self), xscale, yscale);
+};
+
+inline void
+Window::default_key_clb(GLFWwindow *self, int key, int scancode, int action, int mods)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_key(context.getw(self), key, scancode, action, mods);
+};
+
+inline void
+Window::default_char_clb(GLFWwindow *self, unsigned codepoint)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_char(context.getw(self), codepoint);
+};
+
+inline void
+Window::default_char_mods_clb(GLFWwindow *self, unsigned codepoint, int mods)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_char_mods(context.getw(self), codepoint, mods);
+};
+
+inline void
+Window::default_mouse_button_clb(GLFWwindow *self, int button, int action, int mods)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_mouse_button(context.getw(self), button, action, mods);
+};
+
+inline void
+Window::default_cursor_pos_clb(GLFWwindow *self, double xpos, double ypos)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_cursor_pos(context.getw(self), xpos, ypos);
+};
+
+inline void
+Window::default_cursor_enter_clb(GLFWwindow *self, int entered)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_cursor_enter(context.getw(self), entered);
+};
+
+inline void
+Window::default_scroll_clb(GLFWwindow *self, double xoffset, double yoffset)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_scroll(context.getw(self), xoffset, yoffset);
+};
+
+inline void
+Window::default_drop_clb(GLFWwindow *self, int path_count, const char **paths)
+{
+    auto &context = *static_cast<Window_Callback_Context *>(glfwGetWindowUserPointer(self));
+    assert(self == context.getw(self).get());
+    context.getw(self).on_drop(context.getw(self), path_count, paths);
+};
 
 class App
 {
@@ -468,15 +543,24 @@ class App
         shared = -1
     };
 
+  public: // signal types
+
+    using Signal_On_Window_Process = boost::signals2::signal<void(App &app, Window_Id wid, Window &)>;
+
   public:
 
     App();
     ~App();
 
-    void    set_next_window_hints(Window_Hints hints);
-    Window &create_window(int width, int height, std::string title = {}, std::optional<std::reference_wrapper<Monitor>> monitor = {}, std::optional<std::reference_wrapper<Window>> share_context_with = {});
+    void          set_next_window_hints(Window_Hints hints);
+    Window_Hints &get_next_window_hints() const;
+    Window       &create_window(int width, int height, std::string title = {}, std::optional<std::reference_wrapper<Monitor>> monitor = {}, std::optional<std::reference_wrapper<Window>> share_context_with = {});
 
     void run();
+
+  public:
+
+    Signal_On_Window_Process on_window_process;
 
   protected:
 
@@ -502,6 +586,7 @@ inline App::~App()
 inline void
 App::set_next_window_hints(Window_Hints hints)
 {
+    // TODO:
 }
 
 inline Window &
@@ -558,7 +643,7 @@ App::create_window(int width, int height, std::string title, std::optional<std::
     apply_window_hints(next_window_hints_);
     auto &result = windows_.emplace(std::make_pair(window_id++, Window {this, width, height, title, monitor, share_context_with})).first->second;
 
-    // std::visit(Renderer_Api_Loader {result}, next_window_hints_.renderer);
+    std::visit(Renderer_Api_Loader {result}, next_window_hints_.renderer);
 
     return result;
 }
@@ -578,6 +663,8 @@ App::run()
                 to_delete_windows.insert(wid);
                 continue;
             }
+
+            on_window_process(*this, wid, window);
 
             window.swap_buffers();
         }
