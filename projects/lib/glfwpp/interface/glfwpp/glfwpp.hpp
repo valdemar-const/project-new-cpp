@@ -27,7 +27,7 @@ namespace glfw
 class Monitor;      // forward decl
 class Window_Hints; // forward decl
 class Window;       // forward decl
-class App;          // forward decl
+class Context;      // forward decl
 
 constexpr size_t id_none {0};
 constexpr size_t id_start {1};
@@ -163,7 +163,7 @@ class Window
 
   private: // hidden constructor
 
-    Window(App *owner, int width, int height, std::string title = {}, std::optional<std::reference_wrapper<Monitor>> monitor = {}, std::optional<std::reference_wrapper<Window>> share_context_with = {});
+    Window(Context *owner, int width, int height, std::string title = {}, std::optional<std::reference_wrapper<Monitor>> monitor = {}, std::optional<std::reference_wrapper<Window>> share_context_with = {});
     Window(Window &copy_from)            = delete;
     Window &operator=(Window &copy_from) = delete;
 
@@ -216,11 +216,11 @@ class Window
   protected:
 
     GLFWwindow *self_  = nullptr;
-    App        *owner_ = nullptr;
+    Context    *owner_ = nullptr;
 
   protected:
 
-    friend class App;
+    friend class Context;
 
   private: // for signals support
 
@@ -304,7 +304,7 @@ struct Window::Window_Callback_Context
 
 inline std::map<GLFWwindow *, Window *> Window::windows_ = {};
 
-inline Window::Window(App *owner, int width, int height, std::string title, std::optional<std::reference_wrapper<Monitor>> monitor, std::optional<std::reference_wrapper<Window>> share_context_with)
+inline Window::Window(Context *owner, int width, int height, std::string title, std::optional<std::reference_wrapper<Monitor>> monitor, std::optional<std::reference_wrapper<Window>> share_context_with)
     : owner_(owner)
 {
     GLFWmonitor *target_monitor = monitor.has_value() ? monitor.value().get().get() : nullptr;
@@ -532,7 +532,7 @@ Window::default_drop_clb(GLFWwindow *self, int path_count, const char **paths)
     context.getw(self).on_drop(context.getw(self), path_count, paths);
 };
 
-class App
+class Context
 {
   public:
 
@@ -545,12 +545,20 @@ class App
 
   public: // signal types
 
-    using Signal_On_Window_Process = boost::signals2::signal<void(App &app, Window_Id wid, Window &)>;
+    using Signal_On_Window_Process = boost::signals2::signal<void(Context &app, Window_Id wid, Window &)>;
+
+  private:
+
+    Context();
 
   public:
 
-    App();
-    ~App();
+    static Context &get();
+
+    Context(const Context &copy_from)            = delete;
+    Context &operator=(const Context &copy_from) = delete;
+
+    ~Context();
 
     void          set_next_window_hints(Window_Hints hints);
     Window_Hints &get_next_window_hints() const;
@@ -573,24 +581,32 @@ class App
     std::map<Window_Id, Window> windows_;
 };
 
-inline App::App()
+inline Context &
+Context::get()
+{
+    static Context ctx;
+
+    return ctx;
+}
+
+inline Context::Context()
 {
     glfwInit();
 }
 
-inline App::~App()
+inline Context::~Context()
 {
     glfwTerminate();
 }
 
 inline void
-App::set_next_window_hints(Window_Hints hints)
+Context::set_next_window_hints(Window_Hints hints)
 {
     // TODO:
 }
 
 inline Window &
-App::create_window(int width, int height, std::string title, std::optional<std::reference_wrapper<Monitor>> monitor, std::optional<std::reference_wrapper<Window>> share_context_with)
+Context::create_window(int width, int height, std::string title, std::optional<std::reference_wrapper<Monitor>> monitor, std::optional<std::reference_wrapper<Window>> share_context_with)
 {
     static std::atomic_size_t window_id {id_start}; // 0 means none
 
@@ -649,7 +665,7 @@ App::create_window(int width, int height, std::string title, std::optional<std::
 }
 
 inline void
-App::run()
+Context::run()
 {
     while (!windows_.empty())
     {
@@ -677,7 +693,7 @@ App::run()
 }
 
 void
-App::apply_window_hints(const Window_Hints &hints)
+Context::apply_window_hints(const Window_Hints &hints)
 {
     glfwWindowHint(GLFW_SAMPLES, hints.samples);
 
@@ -693,7 +709,7 @@ App::apply_window_hints(const Window_Hints &hints)
 }
 
 inline void
-App::apply_window_hint(const Window_Hints::Renderer &renderer)
+Context::apply_window_hint(const Window_Hints::Renderer &renderer)
 {
     struct Renderer_Visitor_Static
     {
@@ -722,6 +738,12 @@ App::apply_window_hint(const Window_Hints::Renderer &renderer)
     } hints_applyer;
 
     std::visit(hints_applyer, renderer);
+}
+
+inline Context &
+glfw()
+{
+    return Context::get();
 }
 
 } // namespace glfw
