@@ -11,10 +11,14 @@
 
 #include <vector>
 #include <set>
+#include <unordered_set>
 #include <map>
+#include <unordered_map>
 #include <variant>
 #include <optional>
 #include <functional>
+
+#include <algorithm>
 
 #include <atomic>
 
@@ -24,16 +28,81 @@
 namespace glfw
 {
 
-class Monitor;      // forward decl
-class Window_Hints; // forward decl
-class Window;       // forward decl
-class Context;      // forward decl
+class Monitor;       // forward decl
+class Window_Hints;  // forward decl
+class Window;        // forward decl
+class Context_Hints; // forward decl
+class Context;       // forward decl
 
 constexpr size_t id_none {0};
 constexpr size_t id_start {1};
 
 namespace window_hint
 {
+    enum class Code : int32_t
+    {
+        Focused                = GLFW_FOCUSED,
+        Iconified              = GLFW_ICONIFIED,
+        Resizable              = GLFW_RESIZABLE,
+        Visible                = GLFW_VISIBLE,
+        Decorated              = GLFW_DECORATED,
+        AutoIconify            = GLFW_AUTO_ICONIFY,
+        Floating               = GLFW_FLOATING,
+        Maximized              = GLFW_MAXIMIZED,
+        CenterCursor           = GLFW_CENTER_CURSOR,
+        TransparentFrameBuffer = GLFW_TRANSPARENT_FRAMEBUFFER,
+        Hovered                = GLFW_HOVERED,
+        FocusOnShow            = GLFW_FOCUS_ON_SHOW,
+        MousePassthrough       = GLFW_MOUSE_PASSTHROUGH,
+        PositionX              = GLFW_POSITION_X,
+        PositionY              = GLFW_POSITION_Y,
+        RedBits                = GLFW_RED_BITS,
+        GreenBits              = GLFW_GREEN_BITS,
+        BlueBits               = GLFW_BLUE_BITS,
+        AlphaBits              = GLFW_ALPHA_BITS,
+        DepthBits              = GLFW_DEPTH_BITS,
+        StencilBits            = GLFW_STENCIL_BITS,
+        AccumRedBits           = GLFW_ACCUM_RED_BITS,
+        AccumGreenBits         = GLFW_ACCUM_GREEN_BITS,
+        AccumBlueBits          = GLFW_ACCUM_BLUE_BITS,
+        AccumAlphaBits         = GLFW_ACCUM_ALPHA_BITS,
+        AuxBuffers             = GLFW_AUX_BUFFERS,
+        Stereo                 = GLFW_STEREO,
+        Samples                = GLFW_SAMPLES,
+        SrgbCapable            = GLFW_SRGB_CAPABLE,
+        RefreshRate            = GLFW_REFRESH_RATE,
+        DoubleBuffer           = GLFW_DOUBLEBUFFER,
+        ClientApi              = GLFW_CLIENT_API,
+        ContextVersionMajor    = GLFW_CONTEXT_VERSION_MAJOR,
+        ContextVersionMinor    = GLFW_CONTEXT_VERSION_MINOR,
+        ContextRevision        = GLFW_CONTEXT_REVISION,
+        ContextRobustness      = GLFW_CONTEXT_ROBUSTNESS,
+        OpenglForwardCompat    = GLFW_OPENGL_FORWARD_COMPAT,
+        ContextDebug           = GLFW_CONTEXT_DEBUG,
+        OpenglDebugContext     = GLFW_OPENGL_DEBUG_CONTEXT,
+        OpenglProfile          = GLFW_OPENGL_PROFILE,
+        ContextReleaseBehavior = GLFW_CONTEXT_RELEASE_BEHAVIOR,
+        ContextNoError         = GLFW_CONTEXT_NO_ERROR,
+        ContextCreationApi     = GLFW_CONTEXT_CREATION_API,
+        ScaleToMonitor         = GLFW_SCALE_TO_MONITOR,
+        ScaleFrameBuffer       = GLFW_SCALE_FRAMEBUFFER,
+        CocoaRetinaFrameBuffer = GLFW_COCOA_RETINA_FRAMEBUFFER,
+        CocoaFrameName         = GLFW_COCOA_FRAME_NAME,
+        CocoaGraphicsSwitching = GLFW_COCOA_GRAPHICS_SWITCHING,
+        X11ClassName           = GLFW_X11_CLASS_NAME,
+        X11InstanceName        = GLFW_X11_INSTANCE_NAME,
+        Win32KeyboardMenu      = GLFW_WIN32_KEYBOARD_MENU,
+        Win32ShowDefault       = GLFW_WIN32_SHOWDEFAULT,
+        WaylandAppId           = GLFW_WAYLAND_APP_ID
+    };
+
+    enum Client_Api : int32_t
+    {
+        None     = GLFW_NO_API,
+        OpenGL   = GLFW_OPENGL_API,
+        OpenGLES = GLFW_OPENGL_ES_API
+    };
+
     enum Samples : uint8_t
     {
         off = 0,
@@ -42,13 +111,6 @@ namespace window_hint
         x4  = 4,
         x8  = 8,
         x16 = 16
-    };
-
-    enum Client_Api : int32_t
-    {
-        None     = GLFW_NO_API,
-        OpenGL   = GLFW_OPENGL_API,
-        OpenGLES = GLFW_OPENGL_ES_API
     };
 
     struct Renderer_None
@@ -532,20 +594,171 @@ Window::default_drop_clb(GLFWwindow *self, int path_count, const char **paths)
     context.getw(self).on_drop(context.getw(self), path_count, paths);
 };
 
+namespace context_errors
+{
+    class platform_unavailable : public std::runtime_error
+    {
+      public:
+
+        inline platform_unavailable(std::string what)
+            : runtime_error(what)
+        {
+        }
+    };
+
+    class platform_error : public std::runtime_error
+    {
+      public:
+
+        inline platform_error(std::string what)
+            : runtime_error(what)
+        {
+        }
+    };
+
+}; // namespace context_errors
+
+namespace context_hint
+{
+    enum Hint_Id : uint32_t
+    {
+        Platform                = GLFW_PLATFORM,
+        JoystickHatButtons      = GLFW_JOYSTICK_HAT_BUTTONS,
+        AnglePlatformType       = GLFW_ANGLE_PLATFORM_TYPE,
+        GlfwCocoaChdirResources = GLFW_COCOA_CHDIR_RESOURCES,
+        CocoaMenubar            = GLFW_COCOA_MENUBAR,
+        X11XcbVulkanSurface     = GLFW_X11_XCB_VULKAN_SURFACE,
+        WaylandLibdecor         = GLFW_WAYLAND_LIBDECOR
+    };
+
+    struct Platform
+    {
+        const Hint_Id id = Hint_Id::Platform;
+        enum class Hint_Value : int32_t
+        {
+            Undefined = GLFW_PLATFORM_NULL,
+            Win32     = GLFW_PLATFORM_WIN32,
+            Cocoa     = GLFW_PLATFORM_COCOA,
+            Wayland   = GLFW_PLATFORM_WAYLAND,
+            X11       = GLFW_PLATFORM_X11,
+            Any       = GLFW_ANY_PLATFORM
+        } value = Hint_Value::Any;
+    };
+
+    struct Joystick_Hat_Buttons
+    {
+        const Hint_Id id    = Hint_Id::JoystickHatButtons;
+        bool          value = true;
+    };
+
+    struct Angle_Platform_Type
+    {
+        const Hint_Id id = Hint_Id::AnglePlatformType;
+        enum class Hint_Value : int32_t
+        {
+            None     = GLFW_ANGLE_PLATFORM_TYPE_NONE,
+            OpenGl   = GLFW_ANGLE_PLATFORM_TYPE_OPENGL,
+            OpenGLES = GLFW_ANGLE_PLATFORM_TYPE_OPENGLES,
+            D3D9     = GLFW_ANGLE_PLATFORM_TYPE_D3D9,
+            D3D11    = GLFW_ANGLE_PLATFORM_TYPE_D3D11,
+            Vulkan   = GLFW_ANGLE_PLATFORM_TYPE_VULKAN
+        } value = Hint_Value::None;
+    };
+
+    struct Cocoa_Chdir_Resources
+    {
+        const Hint_Id id    = Hint_Id::GlfwCocoaChdirResources;
+        bool          value = true;
+    };
+
+    struct Cocoa_Menubar
+    {
+        const Hint_Id id    = Hint_Id::CocoaMenubar;
+        bool          value = true;
+    };
+
+    struct X11_Xcb_Vulkan_Surface
+    {
+        const Hint_Id id    = Hint_Id::X11XcbVulkanSurface;
+        bool          value = true;
+    };
+
+    struct Wayland_Libdecor
+    {
+        const Hint_Id id = Hint_Id::WaylandLibdecor;
+        enum class Hint_Value : int32_t
+        {
+            Prefer  = GLFW_WAYLAND_PREFER_LIBDECOR,
+            Disable = GLFW_WAYLAND_DISABLE_LIBDECOR
+        } value = Hint_Value::Prefer;
+    };
+}; // namespace context_hint
+
+class Context_Hints
+{
+    context_hint::Platform               Platform {};
+    context_hint::Joystick_Hat_Buttons   Joystick_Hat_Buttons {};
+    context_hint::Angle_Platform_Type    Angle_Platform_Type {};
+    context_hint::Cocoa_Chdir_Resources  Cocoa_Chdir_Resources {};
+    context_hint::Cocoa_Menubar          Cocoa_Menubar {};
+    context_hint::X11_Xcb_Vulkan_Surface X11_Xcb_Vulkan_Surface {};
+    context_hint::Wayland_Libdecor       Wayland_Libdecor {};
+};
+
 class Context
 {
   public:
 
+    using Hint_Platform               = context_hint::Platform;
+    using Hint_Joystick_Hat_Buttons   = context_hint::Joystick_Hat_Buttons;
+    using Hint_Angle_Platform_Type    = context_hint::Angle_Platform_Type;
+    using Hint_Cocoa_Chdir_Resources  = context_hint::Cocoa_Chdir_Resources;
+    using Hint_Cocoa_Menubar          = context_hint::Cocoa_Menubar;
+    using Hint_X11_Xcb_Vulkan_Surface = context_hint::X11_Xcb_Vulkan_Surface;
+    using Hint_Wayland_Libdecor       = context_hint::Wayland_Libdecor;
+
     using Window_Id = size_t;
+    using Error_Msg = std::string_view;
+
+    enum Error_Code : int32_t
+    {
+        Ok                   = GLFW_NO_ERROR,
+        NotInitialized       = GLFW_NOT_INITIALIZED,
+        NoCurrentContext     = GLFW_NO_CURRENT_CONTEXT,
+        InvalidEnum          = GLFW_INVALID_ENUM,
+        InvalidValue         = GLFW_INVALID_VALUE,
+        OutOfMemory          = GLFW_OUT_OF_MEMORY,
+        ApiUnavailable       = GLFW_API_UNAVAILABLE,
+        VersionUnavailable   = GLFW_VERSION_UNAVAILABLE,
+        PlatformError        = GLFW_PLATFORM_ERROR,
+        FormatUnavailable    = GLFW_FORMAT_UNAVAILABLE,
+        NoWindowContext      = GLFW_NO_WINDOW_CONTEXT,
+        CursorUnavailable    = GLFW_CURSOR_UNAVAILABLE,
+        FeatureUnavailable   = GLFW_FEATURE_UNAVAILABLE,
+        FeatureUnimplemented = GLFW_FEATURE_UNIMPLEMENTED,
+        PlatformUnavailable  = GLFW_PLATFORM_UNAVAILABLE
+    };
 
     enum Special_Window_Id : Window_Id
     {
         shared = -1
     };
 
+    enum Platform : int32_t
+    {
+        Undefined = GLFW_PLATFORM_NULL,
+        Win32     = GLFW_PLATFORM_WIN32,
+        Cocoa     = GLFW_PLATFORM_COCOA,
+        Wayland   = GLFW_PLATFORM_WAYLAND,
+        X11       = GLFW_PLATFORM_X11
+    };
+
+    struct Version; // forward decl
+
   public: // signal types
 
     using Signal_On_Window_Process = boost::signals2::signal<void(Context &app, Window_Id wid, Window &)>;
+    using Signal_On_Error          = boost::signals2::signal<void(Error_Code error_code, Error_Msg description)>;
 
   private:
 
@@ -553,22 +766,46 @@ class Context
 
   public:
 
+    static Version                          version();
+    static bool                             platform_supported(Platform platform);
+    static std::pair<Error_Code, Error_Msg> get_error();
+
+    static void          init_hint(Hint_Platform hint);
+    static void          init_hint(Hint_Joystick_Hat_Buttons hint);
+    static void          init_hint(Hint_Angle_Platform_Type hint);
+    static void          init_hint(Hint_Cocoa_Chdir_Resources hint);
+    static void          init_hint(Hint_Cocoa_Menubar hint);
+    static void          init_hint(Hint_X11_Xcb_Vulkan_Surface hint);
+    static void          init_hint(Hint_Wayland_Libdecor hint);
+    static Context_Hints init_hints();
+    static void          init_hints(Context_Hints hints);
+
+  public: // initialization
+
     static Context &get();
 
-    Context(const Context &copy_from)            = delete;
-    Context &operator=(const Context &copy_from) = delete;
+    Context(const Context &copy_from)             = delete;
+    Context &operator=(const Context &copy_from)  = delete;
+    Context(const Context &&move_from)            = delete;
+    Context &operator=(const Context &&move_from) = delete;
 
     ~Context();
 
+  public: // windows/context creation
+
+    void          reset_next_window_hints();
     void          set_next_window_hints(Window_Hints hints);
     Window_Hints &get_next_window_hints() const;
     Window       &create_window(int width, int height, std::string title = {}, std::optional<std::reference_wrapper<Monitor>> monitor = {}, std::optional<std::reference_wrapper<Window>> share_context_with = {});
+
+  public: // main loop
 
     void run();
 
   public:
 
     Signal_On_Window_Process on_window_process;
+    Signal_On_Error          on_error;
 
   protected:
 
@@ -577,9 +814,55 @@ class Context
 
   protected:
 
+    static Context_Hints        next_init_hints_;
     Window_Hints                next_window_hints_ {};
     std::map<Window_Id, Window> windows_;
+
+  private:
+
+    void set_default_callbacks();
+
+    void default_error_clb(int error_code, const char *description);
 };
+
+struct Context::Version
+{
+    int32_t major    = GLFW_VERSION_MAJOR;
+    int32_t minor    = GLFW_VERSION_MINOR;
+    int32_t revision = GLFW_VERSION_REVISION;
+
+    static std::string_view string();
+};
+
+inline std::string_view
+Context::Version::string()
+{
+    return glfwGetVersionString();
+}
+
+inline Context::Version
+Context::version()
+{
+    Context::Version result;
+    glfwGetVersion(&result.major, &result.minor, &result.revision);
+    return result;
+}
+
+inline Context_Hints Context::next_init_hints_ = {};
+
+inline bool
+Context::platform_supported(Platform platform)
+{
+    return glfwPlatformSupported(platform);
+}
+
+inline std::pair<Context::Error_Code, std::string_view>
+Context::get_error()
+{
+    const char *error_msg = nullptr;
+    int         code      = glfwGetError(&error_msg);
+    return std::make_pair(static_cast<Error_Code>(code), error_msg);
+}
 
 inline Context &
 Context::get()
@@ -591,12 +874,40 @@ Context::get()
 
 inline Context::Context()
 {
-    glfwInit();
+    int res = glfwInit();
+    switch (res)
+    {
+    case Error_Code::PlatformUnavailable:
+        {
+            throw context_errors::platform_unavailable("Platform unavailable");
+        }
+        break;
+    case Error_Code::PlatformError:
+        {
+            throw context_errors::platform_error("Platform error");
+        }
+        break;
+    case Error_Code::Ok:
+    default:
+        {
+            /* do nothing */
+        }
+    }
 }
 
 inline Context::~Context()
 {
+    for (const auto &[wid, window] : windows_)
+    {
+        window.make_current(false);
+    }
     glfwTerminate();
+}
+
+inline void
+Context::reset_next_window_hints()
+{
+    // TODO:
 }
 
 inline void

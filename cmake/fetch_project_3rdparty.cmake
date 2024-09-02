@@ -9,6 +9,19 @@ CPMAddPackage(NAME PackageProject.cmake
   GIT_SHALLOW
   EXCLUDE_FROM_ALL)
 
+# -- Configure C++ Core Guidelines Support Library (GSL)
+
+CPMAddPackage(NAME GSL
+  VERSION  4.0.0
+  URL      https://github.com/microsoft/GSL/archive/refs/tags/v4.0.0.zip
+  URL_HASH "SHA256=eb91fcb10a6aa5ccb1d224e07a56c8ecffe9a1bb601fa1848276ec46a2200bfb"
+  # GIT_REPOSITORY https://github.com/microsoft/GSL
+  # GIT_TAG        v4.0.0
+  # GIT_SHALLOW    ON
+  OVERRIDE_FIND_PACKAGE
+  EXCLUDE_FROM_ALL
+  )
+
 # -- Configure Boost
 
 if (UNIX) # Setup ICU for Boost::locale
