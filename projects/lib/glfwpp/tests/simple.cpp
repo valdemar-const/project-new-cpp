@@ -8,7 +8,7 @@ main(
         char *argv[]
 )
 {
-    glfw::App app;
+    auto &app = glfw::glfw();
     app.create_window(640, 480, "GlfwPlusPlus");
 
     app.run();
