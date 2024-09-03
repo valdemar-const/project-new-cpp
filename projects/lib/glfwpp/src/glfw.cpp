@@ -20,22 +20,60 @@ get_version_string(void)
     return glfwGetVersionString();
 }
 
-int32_t
-platform_supported(int32_t platform)
+bool
+platform_supported(Platform platform)
 {
-    return glfwPlatformSupported(platform);
+    return glfwPlatformSupported((int32_t)platform);
 }
 
-int32_t
-get_error(const char **description)
+std::pair<ErrorCode, std::string_view>
+get_error()
 {
-    return glfwGetError(description);
+    const char *description = nullptr;
+    ErrorCode   code        = static_cast<ErrorCode>(glfwGetError(&description));
+    return std::make_pair(code, description);
 }
 
 void
-init_hint(int32_t hint, int32_t value)
+init_hint(Platform hint)
 {
-    glfwInitHint(hint, value);
+    glfwInitHint((int32_t)InitHintCode::Platform, (int32_t)hint);
+}
+
+void
+init_hint(JoystickHatButtons hint, bool is_enable)
+{
+    glfwInitHint((int32_t)InitHintCode::JoystickHatButtons, is_enable);
+}
+
+void
+init_hint(AnglePlatformType hint)
+{
+    glfwInitHint((int32_t)InitHintCode::AnglePlatformType, (int32_t)hint);
+}
+
+void
+init_hint(CocoaChdirResources hint, bool is_enable)
+{
+    glfwInitHint((int32_t)InitHintCode::CocoaChdirResources, is_enable);
+}
+
+void
+init_hint(CocoaMenubar hint, bool is_enable)
+{
+    glfwInitHint((int32_t)InitHintCode::CocoaMenubar, is_enable);
+}
+
+void
+init_hint(X11XcbVulkanSurface hint, bool is_enable)
+{
+    glfwInitHint((int32_t)InitHintCode::X11XcbVulkanSurface, is_enable);
+}
+
+void
+init_hint(WaylandLibdecor hint)
+{
+    glfwInitHint((int32_t)InitHintCode::WaylandLibdecor, (int32_t)hint);
 }
 
 void

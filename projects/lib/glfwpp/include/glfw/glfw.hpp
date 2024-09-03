@@ -1,4 +1,7 @@
-#include <functional>
+#include <string_view>
+
+#include <utility>
+
 #include <cstdint>
 
 namespace glfw::wrap
@@ -38,16 +41,16 @@ enum class ErrorCode : int32_t
 enum class InitHintCode : int32_t
 {
     // Shared
-    Platform           = 0x00050003,
-    JoystickHatButtons = 0x00050001,
-    AnglePlatformType  = 0x00050002,
+    Platform           = 0x00050003, // Platform
+    JoystickHatButtons = 0x00050001, // true/false
+    AnglePlatformType  = 0x00050002, // AnglePlatformType
     // OSX specific
-    CocoaChdirResources = 0x00051001,
-    CocoaMenubar        = 0x00051002,
+    CocoaChdirResources = 0x00051001, // true/false
+    CocoaMenubar        = 0x00051002, // true/false
     // X11 specific
-    X11XcbVulkanSurface = 0x00052001,
+    X11XcbVulkanSurface = 0x00052001, // true/false
     // Wayland specific
-    WaylandLibdecor = 0x00053001
+    WaylandLibdecor = 0x00053001 // WaylandLibdecor
 };
 
 enum class WindowHintCode : int32_t
@@ -115,7 +118,7 @@ enum class InputModeCode : int32_t
     RawMouseMotion     = 0x00033005
 };
 
-enum class PlatformValue : uint32_t
+enum class Platform : uint32_t
 {
     Undefined = 0x00060005,
     Win32     = 0x00060001,
@@ -125,7 +128,7 @@ enum class PlatformValue : uint32_t
     Any       = 0x00060000
 };
 
-enum class AnglePlatformTypeValue : int32_t
+enum class AnglePlatformType : int32_t
 {
     None     = 0x00037001,
     OpenGl   = 0x00037002,
@@ -136,48 +139,60 @@ enum class AnglePlatformTypeValue : int32_t
     Metal    = 0x00037008
 };
 
-enum class ContextRobustnessValue : int32_t
+class CocoaChdirResources
+{
+};
+
+class CocoaMenubar
+{
+};
+
+class X11XcbVulkanSurface
+{
+};
+
+enum class WaylandLibdecor : int32_t
+{
+    Prefer  = 0x00038001,
+    Disable = 0x00038002
+};
+
+enum class ContextRobustness : int32_t
 {
     NoRobustness        = 0,
     NoResetNotification = 0x00031001,
     LoseContextOnReset  = 0x00031002
 };
 
-enum class ClientApiValue : int32_t
+enum class ClientApi : int32_t
 {
     None     = 0,
     OpenGL   = 0x00030001,
     OpenGLES = 0x00030002
 };
 
-enum class ContextApiValue : int32_t
+enum class ContextApi : int32_t
 {
     Native = 0x00036001,
     Egl    = 0x00036002,
     Osmesa = 0x00036003
 };
 
-enum class WaylandLibdecorValue : int32_t
-{
-    Prefer  = 0x00038001,
-    Disable = 0x00038002
-};
-
-enum class OpenGlProfileValue : int32_t
+enum class OpenGlProfile : int32_t
 {
     Any    = 0,
     Core   = 0x00032001,
     Compat = 0x00032002
 };
 
-enum class ContextReleaseBehaviorValue : int32_t
+enum class ContextReleaseBehavior : int32_t
 {
     Any   = 0,
     Flush = 0x00035001,
     None  = 0x00035002
 };
 
-enum class InputModeCursorValue : int32_t
+enum class InputModeCursor : int32_t
 {
     Normal   = 0x00034001,
     Hidden   = 0x00034002,
@@ -185,7 +200,7 @@ enum class InputModeCursorValue : int32_t
     Captured = 0x00034004
 };
 
-enum class SamplesValue : int32_t
+enum class Samples : int32_t
 {
     off = 0,
     x1  = 1,
@@ -488,8 +503,6 @@ struct Allocator
 
 namespace glfw::wrap
 {
-using DefaultFun = std::function<void()>;
-
 using ErrorFun    = void (*)(int32_t error_code, const char *description);
 using MonitorFun  = void (*)(Monitor *monitor, int32_t event);
 using JoystickFun = void (*)(int32_t jid, int32_t event);
@@ -534,11 +547,18 @@ namespace glfw::wrap
 void        get_version(int32_t *major, int32_t *minor, int32_t *rev);
 const char *get_version_string(void);
 
-int32_t platform_supported(int32_t platform);
+bool platform_supported(Platform platform);
 
-int32_t get_error(const char **description);
+std::pair<ErrorCode, std::string_view> get_error();
 
-void init_hint(int32_t hint, int32_t value);
+void init_hint(Platform hint);
+void init_hint(JoystickHatButtons, bool is_enable = true);
+void init_hint(AnglePlatformType hint);
+void init_hint(CocoaChdirResources, bool is_enable = true);
+void init_hint(CocoaMenubar, bool is_enable = true);
+void init_hint(X11XcbVulkanSurface, bool is_enable = true);
+void init_hint(WaylandLibdecor hint);
+
 void init_allocator(const Allocator *allocator);
 #if defined(VK_VERSION_1_0)
 void init_vulkan_loader(PFN_vkGetInstanceProcAddr loader);
