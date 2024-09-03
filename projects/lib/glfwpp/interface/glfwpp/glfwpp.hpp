@@ -620,7 +620,7 @@ namespace context_errors
 
 namespace context_hint
 {
-    enum Hint_Id : uint32_t
+    enum class Hint_Id : uint32_t
     {
         Platform                = GLFW_PLATFORM,
         JoystickHatButtons      = GLFW_JOYSTICK_HAT_BUTTONS,

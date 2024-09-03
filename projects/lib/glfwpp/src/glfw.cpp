@@ -2,11 +2,50 @@
 
 #include <glfw/glfw3.h>
 
+#include <type_traits>
+
 namespace glfw::wrap
 {
-// Glfw State
 
-// static
+struct Init_Hint_Applier
+{
+    template<typename Hint>
+    void
+    operator()(Hint hint) const
+    {
+        glfwInitHint((int32_t)hint.hint, (int32_t)hint.value);
+    }
+
+    template<>
+    void
+    operator()<std::monostate>(std::monostate hint) const
+    {
+    }
+};
+
+struct Window_Hint_Applier
+{
+    template<typename Hint>
+    void
+    operator()(Hint hint) const
+    {
+        using T = std::decay_t<decltype(hint.value)>;
+        if constexpr (std::is_same_v<T, std::string>)
+        {
+            glfwWindowHintString((int32_t)hint.hint, hint.value.data());
+        }
+        else
+        {
+            glfwWindowHint((int32_t)hint.hint, (int32_t)hint.value);
+        }
+    }
+
+    template<>
+    void
+    operator()<std::monostate>(std::monostate hint) const
+    {
+    }
+};
 
 void
 get_version(int32_t *major, int32_t *minor, int32_t *rev)
@@ -14,10 +53,10 @@ get_version(int32_t *major, int32_t *minor, int32_t *rev)
     glfwGetVersion(major, minor, rev);
 }
 
-const char *
+std::string_view
 get_version_string(void)
 {
-    return glfwGetVersionString();
+    return {glfwGetVersionString()};
 }
 
 bool
@@ -35,45 +74,9 @@ get_error()
 }
 
 void
-init_hint(Platform hint)
+init_hint(Init_Hint hint)
 {
-    glfwInitHint((int32_t)InitHintCode::Platform, (int32_t)hint);
-}
-
-void
-init_hint(JoystickHatButtons hint, bool is_enable)
-{
-    glfwInitHint((int32_t)InitHintCode::JoystickHatButtons, is_enable);
-}
-
-void
-init_hint(AnglePlatformType hint)
-{
-    glfwInitHint((int32_t)InitHintCode::AnglePlatformType, (int32_t)hint);
-}
-
-void
-init_hint(CocoaChdirResources hint, bool is_enable)
-{
-    glfwInitHint((int32_t)InitHintCode::CocoaChdirResources, is_enable);
-}
-
-void
-init_hint(CocoaMenubar hint, bool is_enable)
-{
-    glfwInitHint((int32_t)InitHintCode::CocoaMenubar, is_enable);
-}
-
-void
-init_hint(X11XcbVulkanSurface hint, bool is_enable)
-{
-    glfwInitHint((int32_t)InitHintCode::X11XcbVulkanSurface, is_enable);
-}
-
-void
-init_hint(WaylandLibdecor hint)
-{
-    glfwInitHint((int32_t)InitHintCode::WaylandLibdecor, (int32_t)hint);
+    std::visit(Init_Hint_Applier {}, hint);
 }
 
 void
@@ -98,10 +101,10 @@ set_error_callback(ErrorFun callback)
 
 // constructor/destructor
 
-int32_t
-init(void)
+ErrorCode
+init()
 {
-    return glfwInit();
+    return static_cast<ErrorCode>(glfwInit());
 }
 
 void
@@ -110,16 +113,25 @@ terminate(void)
     glfwTerminate();
 }
 
-int32_t
+Platform
 get_platform(void)
 {
-    return glfwGetPlatform();
+    return static_cast<Platform>(glfwGetPlatform());
 }
 
-Monitor **
-get_monitors(int32_t *count)
+std::vector<Monitor *>
+get_monitors()
 {
-    return (Monitor **)glfwGetMonitors(count);
+    std::vector<Monitor *> result;
+
+    int32_t count = 0;
+    auto    data  = (Monitor **)glfwGetMonitors(&count);
+    result.reserve(count);
+    for (auto i = 0; i < count; ++i)
+    {
+        result.push_back(data[i]);
+    }
+    return result;
 }
 
 Monitor *
@@ -150,7 +162,7 @@ swap_interval(int32_t interval)
     glfwSwapInterval(interval);
 }
 
-int32_t
+bool
 extension_supported(const char *extension)
 {
     return glfwExtensionSupported(extension);
@@ -162,16 +174,24 @@ get_proc_address(const char *procname)
     return glfwGetProcAddress(procname);
 }
 
-int32_t
+bool
 vulkan_supported(void)
 {
     return glfwVulkanSupported();
 }
 
-const char **
-get_required_instance_extensions(uint32_t *count)
+std::vector<std::string_view>
+get_required_instance_extensions()
 {
-    return glfwGetRequiredInstanceExtensions(count);
+    std::vector<std::string_view> result;
+
+    uint32_t count = 0;
+    auto     data  = glfwGetRequiredInstanceExtensions(&count);
+    for (int i = 0; i < count; ++i)
+    {
+        result.push_back(data[i]);
+    }
+    return result;
 }
 
 // handling
@@ -202,16 +222,16 @@ post_empty_event(void)
 
 // input output check
 
-int32_t
+bool
 raw_mouse_motion_supported(void)
 {
     return glfwRawMouseMotionSupported();
 }
 
-const char *
+std::string_view
 get_key_name(int32_t key, int32_t scancode)
 {
-    return glfwGetKeyName(key, scancode);
+    return {glfwGetKeyName(key, scancode)};
 }
 
 int32_t
@@ -248,28 +268,55 @@ joystick_present(int32_t jid)
     return glfwJoystickPresent(jid);
 }
 
-const float *
-get_joystick_axes(int32_t jid, int32_t *count)
+std::vector<float>
+get_joystick_axes(int32_t jid)
 {
-    return glfwGetJoystickAxes(jid, count);
+    std::vector<float> result;
+
+    int32_t count = 0;
+    auto    data  = glfwGetJoystickAxes(jid, &count);
+    for (int i = 0; i < count; ++i)
+    {
+        result.push_back(data[i]);
+    }
+
+    return result;
 }
 
-const unsigned char *
-get_joystick_buttons(int32_t jid, int32_t *count)
+std::vector<uint8_t>
+get_joystick_buttons(int32_t jid)
 {
-    return glfwGetJoystickButtons(jid, count);
+    std::vector<uint8_t> result;
+
+    int32_t count = 0;
+    auto    data  = glfwGetJoystickButtons(jid, &count);
+    for (int i = 0; i < count; ++i)
+    {
+        result.push_back(data[i]);
+    }
+
+    return result;
 }
 
-const unsigned char *
-get_joystick_hats(int32_t jid, int32_t *count)
+std::vector<uint8_t>
+get_joystick_hats(int32_t jid)
 {
-    return glfwGetJoystickHats(jid, count);
+    std::vector<uint8_t> result;
+
+    int32_t count = 0;
+    auto    data  = glfwGetJoystickHats(jid, &count);
+    for (int i = 0; i < count; ++i)
+    {
+        result.push_back(data[i]);
+    }
+
+    return result;
 }
 
-const char *
+std::string_view
 get_joystick_name(int32_t jid)
 {
-    return glfwGetJoystickName(jid);
+    return {glfwGetJoystickName(jid)};
 }
 
 const char *
@@ -304,10 +351,10 @@ update_gamepad_mappings(const char *string)
     return glfwUpdateGamepadMappings(string);
 }
 
-const char *
+std::string_view
 get_gamepad_name(int32_t jid)
 {
-    return glfwGetGamepadName(jid);
+    return {glfwGetGamepadName(jid)};
 }
 
 int32_t
@@ -364,10 +411,31 @@ get_physical_device_presentation_support(VkInstance instance, VkPhysicalDevice d
 #endif
 // Window
 
-Window *
-create_window(int32_t width, int32_t height, const char *title, Monitor *monitor, Window *share)
+void
+default_window_hints()
 {
-    return (Window *)glfwCreateWindow(width, height, title, (GLFWmonitor *)monitor, (GLFWwindow *)share);
+    glfwDefaultWindowHints();
+}
+
+void
+window_hint(Window_Hint hint)
+{
+    std::visit(Window_Hint_Applier {}, hint);
+}
+
+std::string
+window_hint_string(int hint)
+{
+    std::string result;
+    result.resize(128);
+    glfwWindowHintString(hint, result.data());
+    return result.data();
+}
+
+Window *
+create_window(int32_t width, int32_t height, std::string_view title, Monitor *monitor, Window *share)
+{
+    return (Window *)glfwCreateWindow(width, height, title.data(), (GLFWmonitor *)monitor, (GLFWwindow *)share);
 }
 
 void
@@ -382,10 +450,10 @@ window_should_close(Window *window)
     return glfwWindowShouldClose((GLFWwindow *)window);
 }
 
-const char *
+std::string_view
 get_window_title(Window *window)
 {
-    return glfwGetWindowTitle((GLFWwindow *)window);
+    return {glfwGetWindowTitle((GLFWwindow *)window)};
 }
 
 void
@@ -614,10 +682,10 @@ get_cursor_pos(Window *window, double *xpos, double *ypos)
     glfwGetCursorPos((GLFWwindow *)window, xpos, ypos);
 }
 
-const char *
+std::string_view
 get_clipboard_string(Window *window)
 {
-    return glfwGetClipboardString((GLFWwindow *)window);
+    return {glfwGetClipboardString((GLFWwindow *)window)};
 }
 
 KeyFun
@@ -752,10 +820,10 @@ get_monitor_content_scale(Monitor *monitor, float *xscale, float *yscale)
     glfwGetMonitorContentScale((GLFWmonitor *)monitor, xscale, yscale);
 }
 
-const char *
+std::string_view
 get_monitor_name(Monitor *monitor)
 {
-    return glfwGetMonitorName((GLFWmonitor *)monitor);
+    return {glfwGetMonitorName((GLFWmonitor *)monitor)};
 }
 
 void
@@ -770,10 +838,19 @@ get_monitor_user_pointer(Monitor *monitor)
     return glfwGetMonitorUserPointer((GLFWmonitor *)monitor);
 }
 
-const VidMode *
-get_video_modes(Monitor *monitor, int32_t *count)
+std::vector<VidMode>
+get_video_modes(Monitor *monitor)
 {
-    return (VidMode *)glfwGetVideoModes((GLFWmonitor *)monitor, count);
+    std::vector<VidMode> result;
+
+    int32_t count = 0;
+    auto    data  = (VidMode *)glfwGetVideoModes((GLFWmonitor *)monitor, &count);
+    for (int i = 0; i < count; ++i)
+    {
+        result.push_back(data[i]);
+    }
+
+    return result;
 }
 
 const VidMode *

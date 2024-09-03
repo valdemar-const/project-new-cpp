@@ -14,7 +14,7 @@ add_library(GlfwPlusPlus)
 target_sources(GlfwPlusPlus PRIVATE src/glfw.cpp)
 add_library(glfw::glfw ALIAS GlfwPlusPlus)
 target_include_directories(GlfwPlusPlus PUBLIC ${PROJECT_SOURCE_DIR}/include)
-target_link_libraries(GlfwPlusPlus PUBLIC glfw)
+target_link_libraries(GlfwPlusPlus PRIVATE glfw)
 target_compile_definitions(GlfwPlusPlus PUBLIC GLFW_INCLUDE_NONE)
 
 if (PROJECT_IS_TOP_LEVEL AND BUILD_TESTING)
