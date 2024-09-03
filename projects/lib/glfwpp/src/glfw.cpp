@@ -163,9 +163,9 @@ swap_interval(int32_t interval)
 }
 
 bool
-extension_supported(const char *extension)
+extension_supported(std::string_view extension)
 {
-    return glfwExtensionSupported(extension);
+    return glfwExtensionSupported(extension.data());
 }
 
 GlProc

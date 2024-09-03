@@ -1039,7 +1039,7 @@ JoystickFun set_joystick_callback(JoystickFun callback);
 void swap_interval(int32_t interval);
 
 bool   extension_supported(std::string_view extension);
-GlProc get_proc_address(std::string_view procname);
+GlProc get_proc_address(const char *procname);
 
 bool                          vulkan_supported();
 std::vector<std::string_view> get_required_instance_extensions();
