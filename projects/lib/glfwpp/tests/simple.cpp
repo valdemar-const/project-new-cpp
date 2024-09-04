@@ -257,15 +257,20 @@ main(
             {hint::window::ContextCreationApi {ContextCreationApi::Egl}},
             {hint::window::ContextVersionMajor {3}},
             {hint::window::ContextVersionMinor {0}},
-            {hint::window::OpenGlForwardCompat {true}},
+#ifdef __APPLE__
+            {hint::window::OpenGlForwardCompat {true}}, // for MacOS only
+#endif
             {hint::window::OpenGlProfile {OpenGlProfile::Core}},
             {hint::window::DoubleBuffer {true}},
             {hint::window::ContextNoError {false}},
+            {hint::window::ContextRobustness {ContextRobustness::LoseContextOnReset}},
+            {hint::window::ContextDebug {true}},
 
             {hint::window::Resizable {true}},
             {hint::window::ScaleToMonitor {true}},
             {hint::window::ScaleFrameBuffer {true}},
-            {hint::window::RefreshRate {}}
+            {hint::window::RefreshRate {}
+            }
     };
 
     const std::vector<Window_Hint> window_hints_gl_4_6 {
@@ -273,15 +278,20 @@ main(
             {hint::window::ContextCreationApi {ContextCreationApi::Native}},
             {hint::window::ContextVersionMajor {4}},
             {hint::window::ContextVersionMinor {6}},
-            {hint::window::OpenGlForwardCompat {true}},
+#ifdef __APPLE__
+            {hint::window::OpenGlForwardCompat {true}}, // for MacOS only
+#endif
             {hint::window::OpenGlProfile {OpenGlProfile::Core}},
             {hint::window::DoubleBuffer {true}},
             {hint::window::ContextNoError {false}},
+            {hint::window::ContextRobustness {ContextRobustness::LoseContextOnReset}},
+            {hint::window::ContextDebug {true}},
 
             {hint::window::Resizable {true}},
             {hint::window::ScaleToMonitor {true}},
             {hint::window::ScaleFrameBuffer {true}},
-            {hint::window::RefreshRate {}}
+            {hint::window::RefreshRate {}
+            }
     };
 
     apply_init_hints(init_hints_gles_3_0);
