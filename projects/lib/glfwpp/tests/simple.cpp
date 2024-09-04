@@ -140,7 +140,42 @@ print_gl_info()
 
     std::cout << "opengl.vendor: " << glGetString(GL_VENDOR) << std::endl;
     std::cout << "opengl.renderer: " << glGetString(GL_RENDERER) << std::endl;
-    std::cout << "opengl.version: " << glGetString(GL_VERSION) << std::endl;
+    {
+        GLint major, minor;
+        glGetIntegerv(GL_MAJOR_VERSION, &major);
+        glGetIntegerv(GL_MINOR_VERSION, &minor);
+        std::cout << "opengl.version: " << major << "." << minor << std::endl;
+    }
+    std::cout << "opengl.version_info: " << glGetString(GL_VERSION) << std::endl;
+    {
+        GLint shader_lang_versions = 0;
+        glGetIntegerv(GL_NUM_SHADING_LANGUAGE_VERSIONS, &shader_lang_versions);
+        std::vector<std::string_view> shader_versions;
+        shader_versions.resize(shader_lang_versions);
+        GLint next_ver_id = 0;
+        for (auto &ver : shader_versions)
+        {
+            ver = (char *)glGetStringi(GL_SHADING_LANGUAGE_VERSION, next_ver_id++);
+        }
+        if (shader_lang_versions)
+        {
+            auto version = std::accumulate(shader_versions.cbegin(), shader_versions.cend(), std::string {}, [](auto acc, const auto ver)
+                                           {
+                                               if (ver.empty())
+                                               {
+                                                   return std::move(acc);
+                                               }
+                                               else
+                                               {
+                                                   return std::move((acc.empty()) ? "\t" + std::string {ver} : acc + ",\n\t" + std::string {ver});
+                                               }
+                                           });
+
+            std::cout << "opengl.glsl_version: [" << std::endl
+                      << version << std::endl
+                      << "]" << std::endl;
+        }
+    }
     std::cout << "opengl.shading_lang_version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
     std::cout << "opengl.extensions: [" << std::endl;
 
@@ -190,7 +225,7 @@ main(
                 hints.end(),
                 [](const auto hint)
                 {
-                    init_hint(hint);
+                    glfw::wrap::init_hint(hint);
                 }
         );
     };
@@ -202,7 +237,7 @@ main(
                 hints.end(),
                 [](const auto hint)
                 {
-                    window_hint(hint);
+                    glfw::wrap::window_hint(hint);
                 }
         );
     };
@@ -221,12 +256,14 @@ main(
         make_context_current(window);
         swap_interval(1);
 
+        gladLoadGLLoader((GLADloadproc)glfw::wrap::get_proc_address);
+
         auto gl = glLoadContext(window, [](std::string_view proc_name)
                                 {
                                     return glfw::wrap::get_proc_address(proc_name.data());
                                 });
 
-        // print_context_gl_info(window);
+        print_context_gl_info(window);
 
         auto rand_float = []()
         {
@@ -249,12 +286,12 @@ main(
     };
 
     const std::vector<Init_Hint> init_hints_gles_3_0 {
-            {hint::init::AnglePlatformType {AnglePlatformType::OpenGles}}
+            {hint::init::AnglePlatformType {AnglePlatformType::OpenGl}}
     };
 
     const std::vector<Window_Hint> window_hints_gles_3_0 {
             {hint::window::ClientApi {ClientApi::OpenGles}},
-            {hint::window::ContextCreationApi {ContextCreationApi::Egl}},
+            {hint::window::ContextCreationApi {ContextCreationApi::Native}},
             {hint::window::ContextVersionMajor {3}},
             {hint::window::ContextVersionMinor {0}},
 #ifdef __APPLE__
