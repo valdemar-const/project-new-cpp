@@ -22,22 +22,19 @@ using namespace std::string_literals;
 
 struct glLoadContext
 {
-    using Func_glClearColor = std::function<void(GLfloat r, GLfloat g, GLfloat b, GLfloat a)>;
-    using Func_glClear      = std::function<void(GLbitfield buffers_mask)>;
+  public: // types
 
-    enum class Loader
-    {
-        Glad
-    };
+    using Func_glAnyProc    = void();
+    using Func_glClearColor = void(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+    using Func_glClear      = void(GLbitfield buffers_mask);
 
-    glLoadContext(glfw::wrap::Window *window, Loader load_with = Loader::Glad)
+  public: // api
+
+    glLoadContext(glfw::wrap::Window *window, std::function<Func_glAnyProc *(std::string_view)> gl_load_proc)
         : context_(window)
     {
-        const std::unordered_map<Loader, std::function<void()>> loader_func {
-                std::make_pair(Loader::Glad, std::bind(&glLoadContext::load_by_glad, this))
-        };
-
-        loader_func.at(load_with)();
+        ClearColor = reinterpret_cast<Func_glClearColor *>(gl_load_proc("glClearColor"));
+        Clear      = reinterpret_cast<Func_glClear *>(gl_load_proc("glClear"));
     }
 
     glfw::wrap::Window *
@@ -52,8 +49,10 @@ struct glLoadContext
         glfw::wrap::make_context_current(context_);
     }
 
-    Func_glClearColor ClearColor;
-    Func_glClear      Clear;
+  public: // wrapped opengl funcs
+
+    std::function<Func_glClearColor> ClearColor;
+    std::function<Func_glClear>      Clear;
 
   private:
 
@@ -222,7 +221,10 @@ main(
         make_context_current(window);
         swap_interval(1);
 
-        auto gl = glLoadContext(window);
+        auto gl = glLoadContext(window, [](std::string_view proc_name)
+                                {
+                                    return glfw::wrap::get_proc_address(proc_name.data());
+                                });
 
         // print_context_gl_info(window);
 
