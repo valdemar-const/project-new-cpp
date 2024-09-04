@@ -142,7 +142,7 @@ enum class AnglePlatformType : int32_t
 {
     None     = 0x00037001,
     OpenGl   = 0x00037002,
-    OpenGLES = 0x00037003,
+    OpenGles = 0x00037003,
     D3D9     = 0x00037004,
     D3D11    = 0x00037005,
     Vulkan   = 0x00037007,
@@ -165,8 +165,8 @@ enum class ContextRobustness : int32_t
 enum class ClientApi : int32_t
 {
     None     = 0,
-    OpenGL   = 0x00030001,
-    OpenGLES = 0x00030002
+    OpenGl   = 0x00030001,
+    OpenGles = 0x00030002
 };
 
 enum class ContextCreationApi : int32_t
@@ -822,7 +822,7 @@ namespace hint::window
     struct ClientApi
     {
         inline static const WindowHintCode hint {WindowHintCode::ClientApi};
-        wrap::ClientApi                    value = wrap::ClientApi::OpenGL;
+        wrap::ClientApi                    value = wrap::ClientApi::OpenGl;
     };
 
     struct ContextCreationApi
@@ -1186,12 +1186,13 @@ void                 get_monitor_workarea(Monitor *monitor, int32_t *xpos, int32
 void                 get_monitor_physical_size(Monitor *monitor, int32_t *widthMM, int32_t *heightMM);
 void                 get_monitor_content_scale(Monitor *monitor, float *xscale, float *yscale);
 std::string_view     get_monitor_name(Monitor *monitor);
-void                 set_monitor_user_pointer(Monitor *monitor, void *pointer);
 void                *get_monitor_user_pointer(Monitor *monitor);
 std::vector<VidMode> get_video_modes(Monitor *monitor);
 const VidMode       *get_video_mode(Monitor *monitor);
-void                 set_gamma(Monitor *monitor, float gamma);
 const GammaRamp     *get_gamma_ramp(Monitor *monitor);
-void                 set_gamma_ramp(Monitor *monitor, const GammaRamp *ramp);
+
+void set_monitor_user_pointer(Monitor *monitor, void *pointer);
+void set_gamma(Monitor *monitor, float gamma);
+void set_gamma_ramp(Monitor *monitor, const GammaRamp *ramp);
 
 } // namespace glfw::wrap
