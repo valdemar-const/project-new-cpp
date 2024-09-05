@@ -508,6 +508,38 @@ struct Allocator
     void         *user;
 };
 
+template<typename T>
+struct Vec2
+{
+    T x {0};
+    T y {0};
+};
+
+template<typename T>
+struct Dimention
+{
+    T width {0};
+    T height {0};
+};
+
+using ScreenPos    = Vec2<int32_t>;
+using CursorPos    = Vec2<double>;
+using ContentScale = Vec2<float>;
+using MonitorSize  = Dimention<int32_t>;
+using WindowSize   = MonitorSize;
+
+struct AspectRatio
+{
+    int32_t numer;
+    int32_t denom;
+};
+
+struct Workarea
+{
+    ScreenPos   position;
+    MonitorSize size;
+};
+
 }; // namespace glfw::wrap
 
 namespace glfw::wrap
@@ -1118,15 +1150,15 @@ int32_t          get_window_attrib(Window *window, int32_t attrib);
 void            *get_window_user_pointer(Window *window);
 void             get_framebuffer_size(Window *window, int32_t *width, int32_t *height);
 
-void set_window_should_close(Window *window, int32_t value);
+void set_window_should_close(Window *window, bool value);
 void set_window_title(Window *window, std::string_view title);
-void set_window_icon(Window *window, int32_t count, const Image *images);
-void set_window_pos(Window *window, int32_t xpos, int32_t ypos);
-void set_window_size_limits(Window *window, int32_t minwidth, int32_t minheight, int32_t maxwidth, int32_t maxheight);
-void set_window_aspect_ratio(Window *window, int32_t numer, int32_t denom);
-void set_window_size(Window *window, int32_t width, int32_t height);
+void set_window_icon(Window *window, const std::vector<Image *> &images);
+void set_window_pos(Window *window, ScreenPos pos);
+void set_window_size_limits(Window *window, WindowSize min, WindowSize max);
+void set_window_aspect_ratio(Window *window, AspectRatio value);
+void set_window_size(Window *window, WindowSize size);
 void set_window_opacity(Window *window, float opacity);
-void set_window_monitor(Window *window, Monitor *monitor, int32_t xpos, int32_t ypos, int32_t width, int32_t height, int32_t refreshRate);
+void set_window_monitor(Window *window, Monitor *monitor, Workarea workarea, int32_t refreshRate);
 void set_window_attrib(Window *window, int32_t attrib, int32_t value);
 void set_window_user_pointer(Window *window, void *pointer);
 
@@ -1145,14 +1177,14 @@ WindowContentScaleFun set_window_content_scale_callback(Window *window, WindowCo
 // window input/output
 
 void set_input_mode(Window *window, int32_t mode, int32_t value);
-void set_cursor_pos(Window *window, double xpos, double ypos);
+void set_cursor_pos(Window *window, CursorPos pos);
 void set_cursor(Window *window, Cursor *cursor);
 void set_clipboard_string(Window *window, std::string_view string);
 
 int32_t          get_input_mode(Window *window, int32_t mode);
 int32_t          get_key(Window *window, int32_t key);
 int32_t          get_mouse_button(Window *window, int32_t button);
-void             get_cursor_pos(Window *window, double *xpos, double *ypos);
+CursorPos        get_cursor_pos(Window *window);
 std::string_view get_clipboard_string(Window *window);
 
 KeyFun         set_key_callback(Window *window, KeyFun callback);
@@ -1181,10 +1213,10 @@ void swap_buffers(Window *window);
 
 // monitor
 
-void                 get_monitor_pos(Monitor *monitor, int32_t *xpos, int32_t *ypos);
-void                 get_monitor_workarea(Monitor *monitor, int32_t *xpos, int32_t *ypos, int32_t *width, int32_t *height);
-void                 get_monitor_physical_size(Monitor *monitor, int32_t *widthMM, int32_t *heightMM);
-void                 get_monitor_content_scale(Monitor *monitor, float *xscale, float *yscale);
+ScreenPos            get_monitor_pos(Monitor *monitor);
+Workarea             get_monitor_workarea(Monitor *monitor);
+MonitorSize          get_monitor_physical_size(Monitor *monitor);
+ContentScale         get_monitor_content_scale(Monitor *monitor);
 std::string_view     get_monitor_name(Monitor *monitor);
 void                *get_monitor_user_pointer(Monitor *monitor);
 std::vector<VidMode> get_video_modes(Monitor *monitor);
