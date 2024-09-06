@@ -21,8 +21,19 @@ CPMAddPackage(NAME Glad
   SOURCE_SUBDIR  cmake
   EXCLUDE_FROM_ALL)
 
-glad_add_library(glad_gl_core46_noext_gles_core30_noext_mx STATIC EXCLUDE_FROM_ALL REPRODUCIBLE QUIET MX LANGUAGE cpp API gl:core=4.6 EXTENSIONS NONE API gles2:core=3.0 EXTENSIONS NONE)
+glad_add_library(glad_gl_core46_noext_gles_core30_noext_mx STATIC EXCLUDE_FROM_ALL REPRODUCIBLE QUIET MX LANGUAGE cpp API gl:core=4.6 API gles2:core=3.0 EXTENSIONS NONE)
 add_library(glad::gl_core46_noext_gles_core30_noext_mx ALIAS glad_gl_core46_noext_gles_core30_noext_mx)
+
+# -- Configure glbinding
+
+CPMAddPackage(NAME glbinding
+  VERSION        3.3.0
+  URL            "https://github.com/cginternals/glbinding/archive/refs/tags/v3.3.0.zip"
+  URL_HASH       "SHA256=e035385dab8e9e687229e6b95b36c00bc0407669691913de5b63ca734e82b617"
+  # GIT_REPOSITORY "https://github.com/cginternals/glbinding"
+  # GIT_TAG        v3.3.0
+  # GIT_SHALLOW
+  EXCLUDE_FROM_ALL)
 
 # -- Configure C++ Core Guidelines Support Library (GSL)
 
