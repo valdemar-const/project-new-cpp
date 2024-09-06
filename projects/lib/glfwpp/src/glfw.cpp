@@ -262,10 +262,16 @@ destroy_cursor(Cursor *cursor)
 
 // joystick
 
-int32_t
+bool
 joystick_present(int32_t jid)
 {
     return glfwJoystickPresent(jid);
+}
+
+bool
+joystick_is_gamepad(int32_t jid)
+{
+    return glfwJoystickIsGamepad(jid);
 }
 
 std::vector<float>
@@ -325,22 +331,16 @@ get_joystick_guid(int32_t jid)
     return glfwGetJoystickGUID(jid);
 }
 
-void
-set_joystick_user_pointer(int32_t jid, void *pointer)
-{
-    glfwSetJoystickUserPointer(jid, pointer);
-}
-
 void *
 get_joystick_user_pointer(int32_t jid)
 {
     return glfwGetJoystickUserPointer(jid);
 }
 
-int32_t
-joystick_is_gamepad(int32_t jid)
+void
+set_joystick_user_pointer(int32_t jid, void *pointer)
 {
-    return glfwJoystickIsGamepad(jid);
+    glfwSetJoystickUserPointer(jid, pointer);
 }
 
 // gamepad
@@ -456,28 +456,36 @@ get_window_title(Window *window)
     return {glfwGetWindowTitle((GLFWwindow *)window)};
 }
 
-void
-get_window_pos(Window *window, int32_t *xpos, int32_t *ypos)
+ScreenPos
+get_window_pos(Window *window)
 {
-    glfwGetWindowPos((GLFWwindow *)window, xpos, ypos);
+    ScreenPos result;
+    glfwGetWindowPos((GLFWwindow *)window, &result.x, &result.y);
+    return result;
 }
 
-void
-get_window_size(Window *window, int32_t *width, int32_t *height)
+WindowSize
+get_window_size(Window *window)
 {
-    glfwGetWindowSize((GLFWwindow *)window, width, height);
+    WindowSize result;
+    glfwGetWindowSize((GLFWwindow *)window, &result.width, &result.height);
+    return result;
 }
 
-void
-get_window_frame_size(Window *window, int32_t *left, int32_t *top, int32_t *right, int32_t *bottom)
+WindowFrameSize
+get_window_frame_size(Window *window)
 {
-    glfwGetWindowFrameSize((GLFWwindow *)window, left, top, right, bottom);
+    WindowFrameSize result;
+    glfwGetWindowFrameSize((GLFWwindow *)window, &result.left, &result.top, &result.right, &result.bottom);
+    return result;
 }
 
-void
-get_window_content_scale(Window *window, float *xscale, float *yscale)
+ContentScale
+get_window_content_scale(Window *window)
 {
-    glfwGetWindowContentScale((GLFWwindow *)window, xscale, yscale);
+    ContentScale result;
+    glfwGetWindowContentScale((GLFWwindow *)window, &result.x, &result.y);
+    return result;
 }
 
 float
@@ -504,52 +512,54 @@ get_window_user_pointer(Window *window)
     return glfwGetWindowUserPointer((GLFWwindow *)window);
 }
 
-void
-get_framebuffer_size(Window *window, int32_t *width, int32_t *height)
+FramebufferSize
+get_framebuffer_size(Window *window)
 {
-    glfwGetFramebufferSize((GLFWwindow *)window, width, height);
+    FramebufferSize result;
+    glfwGetFramebufferSize((GLFWwindow *)window, &result.width, &result.height);
+    return result;
 }
 
 void
-set_window_should_close(Window *window, int32_t value)
+set_window_should_close(Window *window, bool value)
 {
     glfwSetWindowShouldClose((GLFWwindow *)window, value);
 }
 
 void
-set_window_title(Window *window, const char *title)
+set_window_title(Window *window, std::string_view title)
 {
-    glfwSetWindowTitle((GLFWwindow *)window, title);
+    glfwSetWindowTitle((GLFWwindow *)window, title.data());
 }
 
 void
-set_window_icon(Window *window, int32_t count, const Image *images)
+set_window_icon(Window *window, const std::vector<Image *> &images)
 {
-    glfwSetWindowIcon((GLFWwindow *)window, count, (GLFWimage *)images);
+    glfwSetWindowIcon((GLFWwindow *)window, images.size(), (GLFWimage *)images.data());
 }
 
 void
-set_window_pos(Window *window, int32_t xpos, int32_t ypos)
+set_window_pos(Window *window, ScreenPos pos)
 {
-    glfwSetWindowPos((GLFWwindow *)window, xpos, ypos);
+    glfwSetWindowPos((GLFWwindow *)window, pos.x, pos.y);
 }
 
 void
-set_window_size_limits(Window *window, int32_t minwidth, int32_t minheight, int32_t maxwidth, int32_t maxheight)
+set_window_size_limits(Window *window, WindowSize min, WindowSize max)
 {
-    glfwSetWindowSizeLimits((GLFWwindow *)window, minwidth, minheight, maxwidth, maxheight);
+    glfwSetWindowSizeLimits((GLFWwindow *)window, min.width, min.height, max.width, max.height);
 }
 
 void
-set_window_aspect_ratio(Window *window, int32_t numer, int32_t denom)
+set_window_aspect_ratio(Window *window, AspectRatio value)
 {
-    glfwSetWindowAspectRatio((GLFWwindow *)window, numer, denom);
+    glfwSetWindowAspectRatio((GLFWwindow *)window, value.numer, value.denom);
 }
 
 void
-set_window_size(Window *window, int32_t width, int32_t height)
+set_window_size(Window *window, WindowSize size)
 {
-    glfwSetWindowSize((GLFWwindow *)window, width, height);
+    glfwSetWindowSize((GLFWwindow *)window, size.width, size.height);
 }
 
 void
@@ -559,9 +569,17 @@ set_window_opacity(Window *window, float opacity)
 }
 
 void
-set_window_monitor(Window *window, Monitor *monitor, int32_t xpos, int32_t ypos, int32_t width, int32_t height, int32_t refreshRate)
+set_window_monitor(Window *window, Monitor *monitor, Workarea workarea, int32_t refreshRate)
 {
-    glfwSetWindowMonitor((GLFWwindow *)window, (GLFWmonitor *)monitor, xpos, ypos, width, height, refreshRate);
+    glfwSetWindowMonitor(
+            (GLFWwindow *)window,
+            (GLFWmonitor *)monitor,
+            workarea.position.x,
+            workarea.position.y,
+            workarea.size.width,
+            workarea.size.height,
+            refreshRate
+    );
 }
 
 void
@@ -641,9 +659,9 @@ set_input_mode(Window *window, int32_t mode, int32_t value)
 }
 
 void
-set_cursor_pos(Window *window, double xpos, double ypos)
+set_cursor_pos(Window *window, CursorPos pos)
 {
-    glfwSetCursorPos((GLFWwindow *)window, xpos, ypos);
+    glfwSetCursorPos((GLFWwindow *)window, pos.x, pos.y);
 }
 
 void
@@ -653,9 +671,9 @@ set_cursor(Window *window, Cursor *cursor)
 }
 
 void
-set_clipboard_string(Window *window, const char *string)
+set_clipboard_string(Window *window, std::string_view string)
 {
-    glfwSetClipboardString((GLFWwindow *)window, string);
+    glfwSetClipboardString((GLFWwindow *)window, string.data());
 }
 
 int32_t
@@ -796,28 +814,42 @@ swap_buffers(Window *window)
 
 // monitor
 
-void
-get_monitor_pos(Monitor *monitor, int32_t *xpos, int32_t *ypos)
+ScreenPos
+get_monitor_pos(Monitor *monitor)
 {
-    glfwGetMonitorPos((GLFWmonitor *)monitor, xpos, ypos);
+    ScreenPos result;
+    glfwGetMonitorPos((GLFWmonitor *)monitor, &result.x, &result.y);
+    return result;
 }
 
-void
-get_monitor_workarea(Monitor *monitor, int32_t *xpos, int32_t *ypos, int32_t *width, int32_t *height)
+Workarea
+get_monitor_workarea(Monitor *monitor)
 {
-    glfwGetMonitorWorkarea((GLFWmonitor *)monitor, xpos, ypos, width, height);
+    Workarea result;
+    glfwGetMonitorWorkarea(
+            (GLFWmonitor *)monitor,
+            &result.position.x,
+            &result.position.y,
+            &result.size.width,
+            &result.size.height
+    );
+    return result;
 }
 
-void
-get_monitor_physical_size(Monitor *monitor, int32_t *widthMM, int32_t *heightMM)
+MonitorSize
+get_monitor_physical_size(Monitor *monitor)
 {
-    glfwGetMonitorPhysicalSize((GLFWmonitor *)monitor, widthMM, heightMM);
+    int32_t widthMM, heightMM;
+    glfwGetMonitorPhysicalSize((GLFWmonitor *)monitor, &widthMM, &heightMM);
+    return {widthMM, heightMM};
 }
 
-void
-get_monitor_content_scale(Monitor *monitor, float *xscale, float *yscale)
+ContentScale
+get_monitor_content_scale(Monitor *monitor)
 {
-    glfwGetMonitorContentScale((GLFWmonitor *)monitor, xscale, yscale);
+    float xscale, yscale;
+    glfwGetMonitorContentScale((GLFWmonitor *)monitor, &xscale, &yscale);
+    return {xscale, yscale};
 }
 
 std::string_view
@@ -853,10 +885,16 @@ get_video_modes(Monitor *monitor)
     return result;
 }
 
-const VidMode *
+const VidMode &
 get_video_mode(Monitor *monitor)
 {
-    return (VidMode *)glfwGetVideoMode((GLFWmonitor *)monitor);
+    return *(VidMode *)glfwGetVideoMode((GLFWmonitor *)monitor);
+}
+
+const GammaRamp &
+get_gamma_ramp(Monitor *monitor)
+{
+    return *(GammaRamp *)glfwGetGammaRamp((GLFWmonitor *)monitor);
 }
 
 void
@@ -865,16 +903,10 @@ set_gamma(Monitor *monitor, float gamma)
     glfwSetGamma((GLFWmonitor *)monitor, gamma);
 }
 
-const GammaRamp *
-get_gamma_ramp(Monitor *monitor)
-{
-    return (GammaRamp *)glfwGetGammaRamp((GLFWmonitor *)monitor);
-}
-
 void
-set_gamma_ramp(Monitor *monitor, const GammaRamp *ramp)
+set_gamma_ramp(Monitor *monitor, const GammaRamp &ramp)
 {
-    glfwSetGammaRamp((GLFWmonitor *)monitor, (GLFWgammaramp *)ramp);
+    glfwSetGammaRamp((GLFWmonitor *)monitor, (GLFWgammaramp *)&ramp);
 }
 
 } // namespace glfw::wrap

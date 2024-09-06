@@ -522,11 +522,20 @@ struct Dimention
     T height {0};
 };
 
-using ScreenPos    = Vec2<int32_t>;
-using CursorPos    = Vec2<double>;
-using ContentScale = Vec2<float>;
-using MonitorSize  = Dimention<int32_t>;
-using WindowSize   = MonitorSize;
+using ScreenPos       = Vec2<int32_t>;
+using CursorPos       = Vec2<double>;
+using ContentScale    = Vec2<float>;
+using MonitorSize     = Dimention<int32_t>;
+using WindowSize      = Dimention<int32_t>;
+using FramebufferSize = Dimention<int32_t>;
+
+struct WindowFrameSize
+{
+    int32_t left;
+    int32_t top;
+    int32_t right;
+    int32_t bottom;
+};
 
 struct AspectRatio
 {
@@ -1098,14 +1107,15 @@ void    destroy_cursor(Cursor *cursor);
 
 // joystick
 
-int32_t              joystick_present(int32_t jid);
+bool                 joystick_present(int32_t jid);
+bool                 joystick_is_gamepad(int32_t jid);
 std::vector<float>   get_joystick_axes(int32_t jid);
 std::vector<uint8_t> get_joystick_buttons(int32_t jid);
 std::string_view     get_joystick_name(int32_t jid);
 const char          *get_joystick_guid(int32_t jid);
-void                 set_joystick_user_pointer(int32_t jid, void *pointer);
 void                *get_joystick_user_pointer(int32_t jid);
-int32_t              joystick_is_gamepad(int32_t jid);
+
+void set_joystick_user_pointer(int32_t jid, void *pointer);
 
 // gamepad
 
@@ -1140,15 +1150,15 @@ void    destroy_window(Window *window);
 
 int32_t          window_should_close(Window *window);
 std::string_view get_window_title(Window *window);
-void             get_window_pos(Window *window, int32_t *xpos, int32_t *ypos);
-void             get_window_size(Window *window, int32_t *width, int32_t *height);
-void             get_window_frame_size(Window *window, int32_t *left, int32_t *top, int32_t *right, int32_t *bottom);
-void             get_window_content_scale(Window *window, float *xscale, float *yscale);
+ScreenPos        get_window_pos(Window *window);
+WindowSize       get_window_size(Window *window);
+WindowFrameSize  get_window_frame_size(Window *window);
+ContentScale     get_window_content_scale(Window *window);
 float            get_window_opacity(Window *window);
 Monitor         *get_window_monitor(Window *window);
 int32_t          get_window_attrib(Window *window, int32_t attrib);
 void            *get_window_user_pointer(Window *window);
-void             get_framebuffer_size(Window *window, int32_t *width, int32_t *height);
+FramebufferSize  get_framebuffer_size(Window *window);
 
 void set_window_should_close(Window *window, bool value);
 void set_window_title(Window *window, std::string_view title);
@@ -1220,11 +1230,11 @@ ContentScale         get_monitor_content_scale(Monitor *monitor);
 std::string_view     get_monitor_name(Monitor *monitor);
 void                *get_monitor_user_pointer(Monitor *monitor);
 std::vector<VidMode> get_video_modes(Monitor *monitor);
-const VidMode       *get_video_mode(Monitor *monitor);
-const GammaRamp     *get_gamma_ramp(Monitor *monitor);
+const VidMode       &get_video_mode(Monitor *monitor);
+const GammaRamp     &get_gamma_ramp(Monitor *monitor);
 
 void set_monitor_user_pointer(Monitor *monitor, void *pointer);
 void set_gamma(Monitor *monitor, float gamma);
-void set_gamma_ramp(Monitor *monitor, const GammaRamp *ramp);
+void set_gamma_ramp(Monitor *monitor, const GammaRamp &ramp);
 
 } // namespace glfw::wrap

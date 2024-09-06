@@ -1126,24 +1126,20 @@ print_monitors_info()
             std::cout << "{" << std::endl;
             std::cout << "\tname: " << get_monitor_name(m) << std::endl;
             {
-                int x, y;
-                get_monitor_pos(m, &x, &y);
+                auto [x, y] = get_monitor_pos(m);
                 std::cout << "\tpos: " << x << ", " << y << std::endl;
             }
             {
-                float x, y;
-                get_monitor_content_scale(m, &x, &y);
+                auto [x, y] = get_monitor_content_scale(m);
                 std::cout << "\tscale: " << x << ", " << y << std::endl;
             }
             {
-                int w, h;
-                get_monitor_physical_size(m, &w, &h);
+                auto [w, h] = get_monitor_physical_size(m);
                 std::cout << "\tsize: " << w << ", " << h << std::endl;
             }
             {
-                int x, y, w, h;
-                get_monitor_workarea(m, &x, &y, &w, &h);
-                std::cout << "\tworkarea: " << x << ", " << y << ", " << w << ", " << h << std::endl;
+                auto [pos, size] = get_monitor_workarea(m);
+                std::cout << "\tworkarea: " << pos.x << ", " << pos.y << ", " << size.width << ", " << size.height << std::endl;
             }
 
             std::cout << "\theight: " << vm.height << std::endl;
