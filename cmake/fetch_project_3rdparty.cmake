@@ -9,6 +9,21 @@ CPMAddPackage(NAME PackageProject.cmake
   GIT_SHALLOW
   EXCLUDE_FROM_ALL)
 
+# -- Configure glad
+
+CPMAddPackage(NAME Glad
+  VERSION        2.0.7
+  URL            "https://github.com/Dav1dde/glad/archive/refs/tags/v2.0.7.zip"
+  URL_HASH       "SHA256=6645cc2ebeeff637ef59e0736c2c14eb83b607f65221429c5ddc5202101eab1e"
+  # GIT_REPOSITORY "https://github.com/Dav1dde/glad"
+  # GIT_TAG        v2.0.7
+  # GIT_SHALLOW
+  SOURCE_SUBDIR  cmake
+  EXCLUDE_FROM_ALL)
+
+glad_add_library(glad_gl_core46_noext_gles_core30_noext_mx STATIC EXCLUDE_FROM_ALL REPRODUCIBLE QUIET MX LANGUAGE cpp API gl:core=4.6 EXTENSIONS NONE API gles2:core=3.0 EXTENSIONS NONE)
+add_library(glad::gl_core46_noext_gles_core30_noext_mx ALIAS glad_gl_core46_noext_gles_core30_noext_mx)
+
 # -- Configure C++ Core Guidelines Support Library (GSL)
 
 CPMAddPackage(NAME GSL

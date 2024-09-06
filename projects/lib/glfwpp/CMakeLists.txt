@@ -7,7 +7,7 @@ option(BUILD_TESTING OFF)
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} INTERFACE ${PROJECT_SOURCE_DIR}/interface)
-target_link_libraries(${PROJECT_NAME} INTERFACE glfw glad Boost::signals2)
+target_link_libraries(${PROJECT_NAME} INTERFACE glfw Boost::signals2)
 target_compile_definitions(${PROJECT_NAME} INTERFACE GLFW_INCLUDE_NONE)
 
 add_library(GlfwPlusPlus)

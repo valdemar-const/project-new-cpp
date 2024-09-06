@@ -1,4 +1,5 @@
-#include <glad/glad.h>
+#include <glad/gl.h>
+#include <glad/gles2.h>
 #include <glfw/glfw.hpp>
 
 #include <toml++/toml.hpp>
@@ -1291,14 +1292,18 @@ main(
         request_window_attention(window);
     };
 
-    auto configure_gl_context = [&](Window *window) -> glLoadContext
+    auto configure_gl_context = [&](Window *window) -> std::variant<GladGLContext, GladGLES2Context>
     {
         make_context_current(window);
         swap_interval(1);
 
-        gladLoadGLLoader((GLADloadproc)glfw::wrap::get_proc_address);
+        GladGLContext context;
+        GladGLES2Context context_es2;
 
-        auto gl = glLoadContext(window);
+        bool is_gl_loaded = false;
+        bool is_es_loaded = false;
+        is_gl_loaded = gladLoadGLContext(&context, (GLADloadfunc)glfw::wrap::get_proc_address);
+        is_es_loaded = gladLoadGLES2Context(&context_es2, (GLADloadfunc)glfw::wrap::get_proc_address);
 
         print_context_gl_info(window);
 
@@ -1308,10 +1313,10 @@ main(
         };
 
         gl.ClearColor(rand_float(), rand_float(), rand_float(), 1.0);
-        return gl;
+
     };
 
-    auto configure_gl_contexts = [&](const auto &contexts) -> std::map<Window *, glLoadContext>
+    auto configure_gl_contexts = [&](const auto &contexts) -> std::map<Window *, std::variant<GladGLContext, GladGLES2Context>>
     {
         std::map<Window *, glLoadContext> result;
 
