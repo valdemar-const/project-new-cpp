@@ -1,9 +1,3 @@
-#include <glad/gl.h>
-#undef __gl_h_
-#undef __gl3_h_
-#undef __glext_h_
-#undef __gl3ext_h_
-#include <glad/gles2.h>
 #include <glfw/glfw.hpp>
 
 #include <toml++/toml.hpp>
