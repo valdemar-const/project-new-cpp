@@ -37,6 +37,7 @@ include(CTest)
 
 add_subdirectory(projects/lib/example)
 add_subdirectory(projects/lib/glfwpp)
+add_subdirectory(projects/lib/glmeta)
 add_subdirectory(projects/bin/example-cli)
 add_subdirectory(projects/bin/example-wx)
 add_subdirectory(projects/bin/example-glfw)

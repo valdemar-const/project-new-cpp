@@ -1057,4 +1057,4 @@ struct glLoadContext
     std::function<Functor_glWaitSync::glProcType>                                    WaitSync;
 };
 
-}
+} // namespace glpp

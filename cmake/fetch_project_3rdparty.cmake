@@ -6,6 +6,15 @@ CPMAddPackage(NAME PackageProject.cmake
   GIT_SHALLOW
   EXCLUDE_FROM_ALL)
 
+# -- Download GL Registry
+
+CPMAddPackage(NAME GlRegistry
+  VERSION        4.6.0
+  GIT_REPOSITORY "https://github.com/KhronosGroup/OpenGL-Registry.git"
+  GIT_TAG        4f845dc
+  GIT_SHALLOW
+  DOWNLOADONLY)
+
 # -- Configure glad
 
 CPMAddPackage(NAME Glad
@@ -157,6 +166,8 @@ foreach(glad_target IN LISTS glad_targets)
 endforeach()
 
 # -- Configure glbinding
+
+set(OPTION_BUILD_TOOLS OFF)
 
 CPMAddPackage(NAME glbinding
   VERSION        3.3.0
