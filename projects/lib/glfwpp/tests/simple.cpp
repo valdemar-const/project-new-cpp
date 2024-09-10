@@ -1,3 +1,4 @@
+#include <glmeta/glmeta.hpp>
 #include <glfw/glfw.hpp>
 
 #include <toml++/toml.hpp>
@@ -19,6 +20,17 @@
 #include <cstdlib>
 
 using namespace std::string_literals;
+
+using namespace glmeta::types;
+using namespace glmeta::constants;
+
+using GladGLContext    = glmeta::GL_Load_Context<glmeta::Client_Api::Gl, 4, 6, glmeta::Profile::Core, glmeta::Load_Strategy::Immediate>;
+using GladGLES2Context = glmeta::GL_Load_Context<glmeta::Client_Api::Gles2, 3, 0, glmeta::Profile::Core, glmeta::Load_Strategy::Immediate>;
+
+auto gl_load_proc = [](std::string_view func_name)
+{
+    return glfw::wrap::get_proc_address(func_name.data());
+};
 
 void
 print_platform_info()
@@ -216,13 +228,13 @@ main(int argc, char *argv[])
         make_context_current(window);
         swap_interval(1);
 
-        GladGLContext    context;
-        GladGLES2Context context_es2;
+        GladGLContext    context {gl_load_proc};
+        GladGLES2Context context_es2 {gl_load_proc};
 
         bool is_gl_loaded = false;
         bool is_es_loaded = false;
-        is_gl_loaded      = gladLoadGLContext(&context, (GLADloadfunc)glfw::wrap::get_proc_address);
-        is_es_loaded      = gladLoadGLES2Context(&context_es2, (GLADloadfunc)glfw::wrap::get_proc_address);
+        is_gl_loaded      = context.loaded_api == glmeta::Client_Api::Gl;
+        is_es_loaded      = context.loaded_api == glmeta::Client_Api::Gles2;
 
         auto rand_float = []()
         {
